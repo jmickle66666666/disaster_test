@@ -1,0 +1,21 @@
+- set resolution
+- set window size
+- fullscreen
+- all inputs
+- gui sliders
+- gui checkbox
+- gui text input
+- gui color picker
+- gui clip rect?
+- gui drag window?
+- refactor ObjRenderer to just be a generic VBO renderer
+- software alpha
+- psx dither
+- todo list thing in-engine? neat
+- file loading
+- file saving
+- mesh builder api
+- texture drawing api
+- read/write the software render canvas
+- 2d AABB collision
+- 3d AABB collision
