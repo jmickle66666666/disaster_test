@@ -10,11 +10,11 @@ function init()
 
 var shipX = 5;
 var shipY = 5;
-var shipSpeed = 1000/320;
+var shipSpeed = 1600;
 var shipMomentum = {
     x:0, y:0
 };
-var friction = -10;
+var friction = -5;
 
 var shipRect = {
     x: 16, y: 0,
@@ -26,6 +26,7 @@ var time = 0;
 function update(dt)
 {
     time += dt;
+    
     if (Input.getKeyDown(key.escape)) {
         scenes.goToMainMenu();
     }

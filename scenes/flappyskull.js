@@ -8,19 +8,6 @@ var score = 0;
 var screenshake = 0;
 var ss = 0;
 
-var rotTime = 0;
-var rotDuration = .5;
-var rotSpeed = 360;
-var rotation = 0;
-
-var skullRect = {
-	x: 0, y:0, w:32, h:32
-};
-
-var skullDeadRect = {
-	x: 32, y:0, w:32, h:32
-};
-
 function init()
 {
 	skull = {
@@ -41,7 +28,6 @@ var time = 0;
 
 function update(dt)
 {
-	var delta = dt;
 	Draw.clear();
 
     time += dt;
@@ -50,20 +36,11 @@ function update(dt)
     }
 
 	// Move the skull
-	skull.vy += 500 * delta;
-	skull.y += skull.vy * delta;
+	skull.vy += 500 * dt;
+	skull.y += skull.vy * dt;
 	// Jump
 	if (!skull.dead && Input.mouseLeftDown) {
 		skull.vy = -175;
-		rotTime = rotDuration;
-	}
-
-	rotTime -= delta;
-
-	if (rotTime > 0) {
-		rotation += rotSpeed * delta;
-	} else {
-		rotation = 0;
 	}
 
 	// Check for OOB
@@ -72,6 +49,17 @@ function update(dt)
 		skull.vy = -100;
 		skull.respawn_time = 3.5;
 		screenshake = 0.5;
+		Engine.timescale = 0.5;
+	}
+
+	// Screenshake
+	if (screenshake > 0) {
+		screenshake -= dt;
+		Draw.offset(Math.random() * screenshake * 10,Math.random() * screenshake * 10);
+		if (screenshake <= 0) {
+			ss = 0;
+			Draw.offset(0,0);
+		}
 	}
 
 	// Draw pipes and do collision checking
@@ -90,6 +78,7 @@ function update(dt)
 						skull.vy = -100;
 						skull.respawn_time = 3.5;
 						screenshake = 0.5;
+						Engine.timescale = 0.5;
 					}
 			}
 
@@ -101,10 +90,10 @@ function update(dt)
 		}
 
 		// Draw pipe
-		Draw.texture(pipe.x-32+ss,pipe.y-180+ss,"sprites/pipe.png");
+		Draw.texture(pipe.x-32,pipe.y-180,"sprites/pipe.png");
 
 		// Move pipe
-		pipe.x -= delta * 64;
+		pipe.x -= dt * 64;
 		if (pipe.x < -64) {
 			pipe.x += 424;
 			pipe.y = Math.random() * 90 + 45;
@@ -112,18 +101,16 @@ function update(dt)
 		}
 	}
 
-	// Screenshake
-	if (screenshake > 0) {
-		screenshake -= delta;
-		ss = Math.random() * screenshake * 10;
-		if (screenshake <= 0) {
-			ss = 0;
-		}
-	}
-
 	// Respawn
 	if (skull.respawn_time > 0) {
-		skull.respawn_time -= delta;
+		skull.respawn_time -= dt;
+		
+		if (Engine.timescale < 1) {
+			Engine.timescale += dt;
+			if (Engine.timescale >= 1) {
+				Engine.timescale = 1;
+			}
+		}
 		if (skull.dead && skull.respawn_time < 1) {
 			skull.dead = false;
 			skull.y = 64;
@@ -131,19 +118,20 @@ function update(dt)
 		}
 	}
 
+	// Draw player
+	if (skull.respawn_time <= 0 || skull.respawn_time >= 1 || ((skull.respawn_time * 10) % 1) > 0.5) {
+		Draw.texturePartTransformed(skull.x+16, skull.y+16, 
+			{x:skull.dead ? 0 : 32,y:0,w:32,h:32},
+			{originX:16, originY:16, rotation:skull.vy*0.1},
+			"sprites/skull.png");
+		Draw.line(skull.x,skull.y,skull.x+8,skull.y,{ r: 255, g: 0, b: 0, a: 255 });
+		Draw.strokeRect(skull.x,skull.y,32,32,{ r: 255, g: 0, b: 0, a: 255 })
+	}
+
+	Draw.offset(0,0);
 
 	gui.label("score: " + score);
 	gui.label("click to jump");
-	// Draw player
-	if (skull.respawn_time <= 0 || skull.respawn_time >= 1 || ((skull.respawn_time * 10) % 1) > 0.5) {
-		Draw.texturePartTransformed(
-			skull.x+ss, 
-			skull.y+ss, 
-			skull.dead ? skullRect : skullDeadRect,
-			{ originX : 16, originY : 16, rotation: rotation}, 
-			"sprites/skull.png"
-		);
-	}
 
 }
 

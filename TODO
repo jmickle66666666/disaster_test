@@ -10,7 +10,6 @@
 - gui drag window?
 - refactor ObjRenderer to just be a generic VBO renderer
 - software alpha
-- psx dither
 - todo list thing in-engine? neat
 - file loading
 - file saving

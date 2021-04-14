@@ -1,0 +1,16 @@
+newmtl lambert2SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd terrain_texture.tga
+Ni 1.00
+newmtl ship:TT_checker_512x512_UV_GRID
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd 
+Ni 1.45
+Ks 0.50 0.50 0.50
+Ns 225.00

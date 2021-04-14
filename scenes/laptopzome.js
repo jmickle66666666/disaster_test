@@ -52,14 +52,14 @@ function update(dt)
     gui.button("more", function() { laptops *= 2; });
     gui.button("less", function() { laptops /= 2; });
     
-    var ct = t / 100;
+    var ct = t * 10;
     color2.b = 128 + Math.sin(ct) * 128;
     color2.r = 128 + Math.sin(ct + 2) * 128;
     color2.g = 128 + Math.sin(ct + 4) * 128;
     Draw.text(75, 124, "SPINNING LAPTOP ZOME", color2);
     randIndex = 0;
     for (var i = 0; i < laptops; i++) {
-        rotation.y = t/1000;
+        rotation.y = t;
         position.x = -5 + random() * 10;
         position.y = -4 + random() * 6;
         position.z = -5 - random() * 25;
