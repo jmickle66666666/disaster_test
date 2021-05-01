@@ -1,4 +1,5 @@
-﻿uniform sampler2D texture;
+﻿#version 130
+uniform sampler2D texture;
 in vec2 fuv;
 
 void main(void)

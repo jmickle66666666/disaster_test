@@ -1,6 +1,7 @@
-﻿in vec3 pos;
+﻿#version 130
+in vec3 pos;
 in vec2 uv;
-out varying vec2 fuv;
+out vec2 fuv;
 
 void main(void)
 {

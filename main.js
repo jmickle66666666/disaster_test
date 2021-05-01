@@ -3,15 +3,18 @@ var gui = load("gui.js");
 var scenes = load("scenes.js");
 
 var sceneList = {
-    "laptopZome" : load("scenes/laptopzome.js"),
-    "spritetest" : load("scenes/spritetest.js"),
-    "transformtests" : load("scenes/transformtests.js"),
-    "flappy" : load("scenes/flappyskull.js"),
-    "intro" : load("scenes/intro/intro.js"),
-    "lunaship" : load("scenes/lunaship/lunaship.js"),
+    "tyrian clone" : load("tyrian/tyrian.js"),
+    "path editor" : load("tyrian/patheditor.js"),
+    "asset list test" : load("tyrian/assettest.js"),
+    "char test" : load("tyrian/chartest.js"),
+    // "laptopZome" : load("scenes/laptopzome.js"),
+    // "transformtests" : load("scenes/transformtests.js"),
+    // "flappy" : load("scenes/flappyskull.js"),
+    // "intro" : load("scenes/intro/intro.js"),
+    // "lunaship" : load("scenes/lunaship/lunaship.js"),
 };
 
-Draw.loadFont("font1b.png");
+Draw.loadFont("fontsmall.png");
 
 
 function mainMenu()
@@ -32,12 +35,18 @@ function mainMenu()
 
 function update(dt)
 {
-    if (Input.getKeyDown(key.d)) {
+    if (Input.getKeyDown(key.f1)) {
         Debug.toggleProfileGraph();
+    }
+
+    if (Input.getKeyDown(key.f2)) {
+        Engine.reset();
     }
 
     Draw.clear();
     gui.reset();
+
+    // scenes.switchScene(sceneList["tyrian clone"]);
 
     if (scenes.scene == null) {
         mainMenu();
