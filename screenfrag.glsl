@@ -1,15 +1,14 @@
+#version 330
+uniform sampler2D texture0;
+in vec2 fragTexCoord;
+out vec4 finalColor;
 
-uniform sampler2D texture;
-uniform float ditherStrength;
-in vec2 fuv;
-
-void main(void)
+void main()
 {
-
-    vec4 col = texture2D(texture, fuv);
+    vec4 col = texture2D(texture0, fragTexCoord);
     if (col.a < 0.5) {
         discard;
     }
 
-    gl_FragColor = col;
+    finalColor = col;
 }

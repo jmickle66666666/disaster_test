@@ -145,29 +145,25 @@ function update(dt)
     Draw.model(
         ShipPos,
         ShipRotation,
-        "scenes/lunaship/ship.obj",
-        "scenes/lunaship/ship.tga"
+        "scenes/lunaship/ship.obj"
     );
 
     Draw.model(
         {x: 0, y: 0, z: cycle},
         {x: 0, y: 0, z: 0},
-        "scenes/lunaship/terrain.obj",
-        "scenes/lunaship/terrain_texture_lit.tga"
+        "scenes/lunaship/terrain.obj"
     );
 
     Draw.model(
         {x: 0, y: 0, z: -128 + cycle},
         {x: 0, y: 0, z: 0},
-        "scenes/lunaship/terrain.obj",
-        "scenes/lunaship/terrain_texture_lit.tga"
+        "scenes/lunaship/terrain.obj"
     );
 
     Draw.model(
         {x: 0, y: 0, z: -256 + cycle},
         {x: 0, y: 0, z: 0},
-        "scenes/lunaship/terrain.obj",
-        "scenes/lunaship/terrain_texture_lit.tga"
+        "scenes/lunaship/terrain.obj"
     );
 }
 

@@ -11,7 +11,7 @@ var sceneList = {
     // "transformtests" : load("scenes/transformtests.js"),
     // "flappy" : load("scenes/flappyskull.js"),
     // "intro" : load("scenes/intro/intro.js"),
-    // "lunaship" : load("scenes/lunaship/lunaship.js"),
+    "lunaship" : load("scenes/lunaship/lunaship.js"),
 };
 
 Draw.loadFont("fontsmall.png");
