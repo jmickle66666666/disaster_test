@@ -42,7 +42,7 @@ function update(dt)
             Draw.line(path[path.length-1].x, path[path.length-1].y, Input.mouseX, Input.mouseY, pathColor)
         }
 
-        Draw.strokeRect(Input.mouseX-1, Input.mouseY-1, 3, 3, pointColor);
+        Draw.rect(Input.mouseX-1, Input.mouseY-1, 3, 3, pointColor, false);
     } else {
         gui.button("test");
     }
@@ -59,7 +59,7 @@ function update(dt)
             Draw.line(path[i-1].x, path[i-1].y, path[i].x, path[i].y, pathColor);
         }
 
-        Draw.strokeRect(path[i].x-1, path[i].y-1, 3, 3, pointColor);
+        Draw.rect(path[i].x-1, path[i].y-1, 3, 3, pointColor, false);
     }
 
     gui.label("points: "+path.length);

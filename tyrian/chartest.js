@@ -16,6 +16,7 @@ var coolRect = {
         g: 180,
         b: 0
     },
+    array : ["eggs", "beans", "chips"],
     index : 0,
     func : function() { coolRect["fer"+coolRect.index] = "test"; coolRect.index += 1; },
     filled: false
@@ -57,8 +58,8 @@ function update(dt)
     gui.button("leave", function() { scenes.goToMainMenu(); })
 
     if (coolRect.filled) {
-        Draw.fillRect(coolRect.x, coolRect.y, coolRect.w, coolRect.h, coolRect.color);
+        Draw.rect(coolRect.x, coolRect.y, coolRect.w, coolRect.h, coolRect.color, true);
     } else {
-        Draw.strokeRect(coolRect.x, coolRect.y, coolRect.w, coolRect.h, coolRect.color);
+        Draw.rect(coolRect.x, coolRect.y, coolRect.w, coolRect.h, coolRect.color, false);
     }
 }

@@ -1,20 +1,25 @@
-var key = load("keycodes.js");
-var gui = load("gui.js");
-var scenes = load("scenes.js");
+var key = load("lib/keycodes.js");
+var gui = load("lib/gui.js");
+var scenes = load("lib/scenes.js");
 
 var sceneList = {
-    "tyrian clone" : load("tyrian/tyrian.js"),
-    "path editor" : load("tyrian/patheditor.js"),
-    "asset list test" : load("tyrian/assettest.js"),
-    "char test" : load("tyrian/chartest.js"),
+    //"tyrian clone" : load("tyrian/tyrian.js"),
+    //"path editor" : load("tyrian/patheditor.js"),
+    //"asset list test" : load("tyrian/assettest.js"),
+    //"char test" : load("tyrian/chartest.js"),
+    "sprite editor" : load("tools/spriteeditor.js"),
+    "tileset editor" : load("tools/tileseteditor.js"),
+    //"func" : load("func.js"),
+    //"zigeye" : load("zigeye.js"),
+    //"triangle" : load("triangle.js"),
     // "laptopZome" : load("scenes/laptopzome.js"),
     // "transformtests" : load("scenes/transformtests.js"),
     // "flappy" : load("scenes/flappyskull.js"),
     // "intro" : load("scenes/intro/intro.js"),
-    "lunaship" : load("scenes/lunaship/lunaship.js"),
+    //"lunaship" : load("scenes/lunaship/lunaship.js"),
 };
 
-Draw.loadFont("fontsmall.png");
+Draw.loadFont("lib/fontsmall.png");
 
 
 function mainMenu()
@@ -41,6 +46,14 @@ function update(dt)
 
     if (Input.getKeyDown(key.f2)) {
         Engine.reset();
+    }
+
+    if (Input.getKeyDown(key.f6)) {
+        Engine.toggleOverdraw();
+    }
+
+    if (Input.getKeyDown(key.f7)) {
+        Engine.slowDrawFrame(16);
     }
 
     Draw.clear();

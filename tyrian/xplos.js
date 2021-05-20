@@ -75,7 +75,7 @@ function addSilent(x, y)
 }
 
 var speed = 16;
-var soundRate = 0.1;
+var soundRate = 0.12;
 var soundTimer = 0;
 
 function update(dt)

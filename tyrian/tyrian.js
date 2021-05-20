@@ -11,6 +11,7 @@ var screenshake = load("tyrian/screenshake.js");
 var score = load("tyrian/score.js");
 var enemytypes = load("tyrian/enemytypes.js");
 var timeline = load("tyrian/timeline.js");
+var sprite = load("lib/sprite.js");
 
 var preload = [
     "tyrian/sprites/sprites.png",
@@ -86,8 +87,6 @@ function update(dt)
     shipX += shipMomentum.x * dt;
     shipY += shipMomentum.y * dt;
 
-    var frame = 0;
-    if (mx == 1) frame += 32; else if (mx == -1) frame += 64;
 
     //gui.label("sprite test");
 
@@ -108,8 +107,13 @@ function update(dt)
     }
     reloadTimer -= dt;
 
-    shipRect.y = 0 + frame;
-    Draw.texturePart(shipX - 16, shipY - 16, shipRect, "tyrian/sprites/sprites.png");
+    if (mx == 1) {
+        sprite.draw(shipX, shipY, "player_r");
+    } else if (mx == -1) {
+        sprite.draw(shipX, shipY, "player_l");
+    } else {
+        sprite.draw(shipX, shipY, "player");
+    }
 
     collision.bbox(shipX - 6, shipY - 6, 12, 12, "player", {
         collide: function () {

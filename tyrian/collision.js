@@ -19,7 +19,7 @@ function resolve()
     {
         var c1 = colliders[i];
         if (debugEnabled) {
-            Draw.strokeRect(c1.x, c1.y, c1.width, c1.height, debugColorBbox);
+            Draw.rect(c1.x, c1.y, c1.width, c1.height, debugColorBbox, false);
         }
         for (var j = i + 1; j < colliders.length; j++)
         {
@@ -27,7 +27,7 @@ function resolve()
             if (c1.x + c1.width >= c2.x && c1.y + c1.height >= c2.y && c1.x < c2.x + c2.width && c1.y < c2.y + c2.height)
             {
                 if (debugEnabled) {
-                    Draw.strokeRect(c1.x, c1.y, c1.width, c1.height, debugColorOverlap);
+                    Draw.rect(c1.x, c1.y, c1.width, c1.height, debugColorOverlap, false);
                 }
 
                 if (c1.object != null) { 

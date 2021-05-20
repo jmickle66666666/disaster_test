@@ -125,7 +125,7 @@ function update(dt)
 			{originX:16, originY:16, rotation:skull.vy*0.1},
 			"sprites/skull.png");
 		Draw.line(skull.x,skull.y,skull.x+8,skull.y,{ r: 255, g: 0, b: 0, a: 255 });
-		Draw.strokeRect(skull.x,skull.y,32,32,{ r: 255, g: 0, b: 0, a: 255 })
+		Draw.rect(skull.x,skull.y,32,32,{ r: 255, g: 0, b: 0, a: 255 }, false)
 	}
 
 	Draw.offset(0,0);

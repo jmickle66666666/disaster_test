@@ -2,6 +2,7 @@ var collision = load("tyrian/collision.js");
 var xplos = load("tyrian/xplos.js");
 var bullets = load("tyrian/bullets.js");
 var score = load("tyrian/score.js");
+var sprite = load("tyrian/sprite.js");
 
 var enemies = [];
 
@@ -49,10 +50,10 @@ function addEnemy(x, y, movetype, speed, type)
     );
 }
 
-function newEnemyType(width, height, hp, bulletType, spriteRect, spriteRectHit)
+function newEnemyType(width, height, hp, bulletType, spriteName)
 {
     return {
-        width: width, height: height, hp: hp, bulletType: bulletType, spriteRect: spriteRect, spriteRectHit: spriteRectHit
+        width: width, height: height, hp: hp, bulletType: bulletType, spriteName: spriteName
     };
 }
 
@@ -117,12 +118,18 @@ function update(dt, px, py)
             }
         }
 
-        Draw.texturePart(
-            Math.floor(enemies[i].x - enemies[i].type.spriteRect.w/2), 
-            Math.floor(enemies[i].y - enemies[i].type.spriteRect.h/2), 
-            enemies[i].hit? enemies[i].type.spriteRectHit : enemies[i].type.spriteRect, 
-            "tyrian/sprites/sprites.png"
+        sprite.draw(
+            Math.floor(enemies[i].x),
+            Math.floor(enemies[i].y),
+            !enemies[i].hit? enemies[i].type.spriteName : enemies[i].type.spriteName + "_flash"
         );
+
+        // Draw.texturePart(
+        //     Math.floor(enemies[i].x - enemies[i].type.spriteRect.w/2), 
+        //     Math.floor(enemies[i].y - enemies[i].type.spriteRect.h/2), 
+        //     enemies[i].hit? enemies[i].type.spriteRectHit : enemies[i].type.spriteRect, 
+        //     "tyrian/sprites/sprites.png"
+        // );
 
         enemies[i].hit = false;
 

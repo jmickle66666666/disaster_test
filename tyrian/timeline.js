@@ -62,7 +62,7 @@ function readLine()
     if (lineIndex >= lines.length) { done = true; return; }
     
     var line = lines[lineIndex];
-    log(line);
+    //log(line);
 
     while (line == "" || line[0] == "#")
     {
