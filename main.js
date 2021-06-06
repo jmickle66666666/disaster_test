@@ -7,8 +7,10 @@ var sceneList = {
     //"path editor" : load("tyrian/patheditor.js"),
     //"asset list test" : load("tyrian/assettest.js"),
     //"char test" : load("tyrian/chartest.js"),
+    "play game" : load("game.js"),
     "sprite editor" : load("tools/spriteeditor.js"),
-    "tileset editor" : load("tools/tileseteditor.js"),
+    "tilemap editor" : load("tools/tilemapeditor.js"),
+    "brb" : load("brb.js"),
     //"func" : load("func.js"),
     //"zigeye" : load("zigeye.js"),
     //"triangle" : load("triangle.js"),
@@ -20,7 +22,7 @@ var sceneList = {
 };
 
 Draw.loadFont("lib/fontsmall.png");
-
+Engine.setMouseVisible(true);
 
 function mainMenu()
 {
@@ -53,17 +55,17 @@ function update(dt)
     }
 
     if (Input.getKeyDown(key.f7)) {
-        Engine.slowDrawFrame(16);
+        Engine.slowDrawFrame(64);
     }
 
     Draw.clear();
     gui.reset();
 
-    // scenes.switchScene(sceneList["tyrian clone"]);
-
+    
     if (scenes.scene == null) {
         mainMenu();
     } else {
         scenes.scene.update(dt);
     }
+    gui.button("break", function() { hello(); })
 }
