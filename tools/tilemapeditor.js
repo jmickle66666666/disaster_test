@@ -230,13 +230,16 @@ function update(dt)
                             y: Input.mouseY + camera.y,
                             properties : {}
                         });
+                        entityRClickMenuOpen = false;
                     });
                 } else {
                     gui.button("delete", function() {
                         registerUndo();
                         currentTilemap.entities.splice(currentEntity, 1);
                         currentEntity = -1;
+                        entityRClickMenuOpen = false;
                     });
+                    if (currentEntity == -1) return;
                 }
         
             }

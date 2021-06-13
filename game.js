@@ -3,7 +3,7 @@ var colors = load("lib/colors.js");
 var collision = load("lib/collision.js");
 var key = load("lib/keycodes.js");
 
-var levelPath = "autosave.json";
+var levelPath = "maps/zupeworld.json";
 var level;
 var entities = [];
 
@@ -45,7 +45,6 @@ function init()
 function update(dt)
 {
     if (Input.getKeyDown(key.f5)) {
-        log("hekki?");
         collision.debugEnabled = !collision.debugEnabled;
     }
 

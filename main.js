@@ -8,9 +8,9 @@ var sceneList = {
     //"asset list test" : load("tyrian/assettest.js"),
     //"char test" : load("tyrian/chartest.js"),
     "play game" : load("game.js"),
-    "sprite editor" : load("tools/spriteeditor.js"),
+    //"sprite editor" : load("tools/spriteeditor.js"),
     "tilemap editor" : load("tools/tilemapeditor.js"),
-    "brb" : load("brb.js"),
+    //"brb" : load("brb.js"),
     //"func" : load("func.js"),
     //"zigeye" : load("zigeye.js"),
     //"triangle" : load("triangle.js"),
@@ -58,6 +58,10 @@ function update(dt)
         Engine.slowDrawFrame(64);
     }
 
+    if (Input.getKeyDown(key.f8)) {
+        Assets.unloadAll();
+    }
+
     Draw.clear();
     gui.reset();
 
@@ -67,5 +71,5 @@ function update(dt)
     } else {
         scenes.scene.update(dt);
     }
-    gui.button("break", function() { hello(); })
+    //gui.button("break", function() { hello(); })
 }
