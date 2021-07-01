@@ -1,4 +1,4 @@
-var game = load("game.js");
+var game = load("plat/game.js");
 var gui = load("lib/gui.js");
 var key = load("lib/keycodes.js");
 var colors = load("lib/colors.js");

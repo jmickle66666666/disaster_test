@@ -6,6 +6,7 @@ out vec4 finalColor;
 void main()
 {
     vec4 col = texture2D(texture0, fragTexCoord);
+    
     if (col.a < 0.5) {
         discard;
     }
