@@ -20,7 +20,7 @@ function init()
     
 
     Draw.setCamera(
-        {x: 0, y: 5, z: 0},
+        {x: 0, y: 5, z: -10},
         {x: 30, y: 0, z: 0}
     );
 
@@ -131,7 +131,6 @@ function makeMesh(a, b)
         indices: indices, 
         uvs: uvs,
         texture: texture,
-        colors: colors
     });
 }
 
@@ -139,6 +138,7 @@ var t = 0;
 
 var mtoggle = false;
 var dragStart;
+var boxPos = {x:0, y:0, z:0};
 
 function update(dt)
 {
@@ -182,35 +182,50 @@ function update(dt)
     groundHit.position.y = Math.round(groundHit.position.y);
     groundHit.position.z = Math.round(groundHit.position.z);
 
-    if (Input.mouseLeftDown && groundHit.hit)
-    {
-        dragStart = {
-            x: groundHit.position.x,
-            y: groundHit.position.y,
-            z: groundHit.position.z
-        };
-    }
+    // if (Input.mouseLeftDown && groundHit.hit)
+    // {
+    //     dragStart = {
+    //         x: groundHit.position.x,
+    //         y: groundHit.position.y,
+    //         z: groundHit.position.z
+    //     };
+    // }
 
-    if (Input.mouseLeft && groundHit.hit && dragStart!=null)
-    {
-        var a = {x: dragStart.x, y: 0, z: groundHit.position.z};
-        var b = {x: groundHit.position.x, y: 0, z: dragStart.z};
-        drawLine(dragStart, a, colors.white);
-        drawLine(dragStart, b, colors.white);
-        drawLine(a, groundHit.position, colors.white);
-        drawLine(b, groundHit.position, colors.white);
-    }
+    // if (Input.mouseLeft && groundHit.hit && dragStart!=null)
+    // {
+    //     var a = {x: dragStart.x, y: 0, z: groundHit.position.z};
+    //     var b = {x: groundHit.position.x, y: 0, z: dragStart.z};
+    //     drawLine(dragStart, a, colors.white);
+    //     drawLine(dragStart, b, colors.white);
+    //     drawLine(a, groundHit.position, colors.white);
+    //     drawLine(b, groundHit.position, colors.white);
+    // }
 
-    if (Input.mouseLeftUp && dragStart != null)
-    {
-        makeMesh(dragStart, groundHit.position);
-    }
+    // if (Input.mouseLeftUp && dragStart != null)
+    // {
+    //     makeMesh(dragStart, groundHit.position);
+    // }
 
     Draw.model(
-        {x: 0, y: 0, z: 0},
+        boxPos,
         {x: 0, y: t * 000, z: 0},   
         cube
     );
+
+    Draw.wireframe(
+        boxPos,
+        {x: 0, y: t * 000, z: 0},   
+        colors.white,
+        cube,
+        true,
+        true
+    );
+
+gui.transform3d(boxPos, function() {
+    boxPos = vmath.snap(boxPos, 1.0);
+});
+
+    //drawLineGradient({x: 0, y: 0, z: 0}, {x:10, y:0, z:20}, colors.disaster, colors.red);
 
     // var center = Draw.worldToScreenPoint(
     //     {x: 0, y: 0, z:10}
@@ -222,7 +237,7 @@ function update(dt)
 
     // Draw.line(center.x, center.y, up.x, up.y, colors.disaster);
 
-    if (groundHit.hit)
+    if (groundHit.hit && false)
     {
         // var sp = Draw.worldToScreenPoint(groundHit.position);
         // gui.objectEditor("sp", sp);
@@ -232,9 +247,10 @@ function update(dt)
         var r = Draw.worldToScreenPoint({ x: groundHit.position.x + .5, y: groundHit.position.y, z: groundHit.position.z });
         var f = Draw.worldToScreenPoint({ x: groundHit.position.x, y: groundHit.position.y, z: groundHit.position.z + .5 });
         var b = Draw.worldToScreenPoint({ x: groundHit.position.x, y: groundHit.position.y, z: groundHit.position.z - .5 });
-        Draw.line(u.x, u.y, d.x, d.y, colors.disaster);
-        Draw.line(l.x, l.y, r.x, r.y, colors.disaster);
-        Draw.line(f.x, f.y, b.x, b.y, colors.disaster);
+        Draw.line(u.x, u.y, d.x, d.y, colors.slimegreen);
+        Draw.line(l.x, l.y, r.x, r.y, colors.meat);
+        Draw.line(f.x, f.y, b.x, b.y, colors.skyblue);
+        // gui.transform3d(groundHit.position);
     }
 
     //gui.objectEditor("mouseray", );
@@ -247,4 +263,11 @@ function drawLine(start, end, color)
     var s = Draw.worldToScreenPoint(start);
     var e = Draw.worldToScreenPoint(end);
     Draw.line(s.x, s.y, e.x, e.y, color);
+}
+
+function drawLineGradient(start, end, color1, color2)
+{
+    var s = Draw.worldToScreenPoint(start);
+    var e = Draw.worldToScreenPoint(end);
+    Draw.lineGradient(s.x, s.y, e.x, e.y, color1, color2);
 }
