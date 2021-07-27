@@ -221,9 +221,9 @@ function update(dt)
         true
     );
 
-gui.transform3d(boxPos, function() {
-    boxPos = vmath.snap(boxPos, 1.0);
-});
+    if (gui.transform3d(boxPos)) {
+        boxPos = vmath.snap(boxPos, 1.0);
+    }
 
     //drawLineGradient({x: 0, y: 0, z: 0}, {x:10, y:0, z:20}, colors.disaster, colors.red);
 

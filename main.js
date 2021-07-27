@@ -8,6 +8,7 @@ var sceneList = {
     //"asset list test" : load("tyrian/assettest.js"),
     //"char test" : load("tyrian/chartest.js"),
     "3d test" : load("3dtests/3dtest.js"),
+    "zone editor" : load("tools/zoneeditor.js"),
     "plat game" : load("plat/game.js"),
     //"sprite editor" : load("tools/spriteeditor.js"),
     "tilemap editor" : load("tools/tilemapeditor.js"),
@@ -22,7 +23,10 @@ var sceneList = {
     //"lunaship" : load("scenes/lunaship/lunaship.js"),
 };
 
-var autoload = "3d test";
+Engine.setResolution(320,240,3);
+
+// var autoload = "zone editor";
+var autoload = "nothing";
 
 Draw.loadFont("lib/fontsmall.png");
 Engine.setMouseVisible(true);
@@ -55,6 +59,11 @@ function update(dt)
 
     if (Input.getKeyDown(key.f2)) {
         Engine.reset();
+        return;
+    }
+
+    if (Input.getKeyDown(key.f3)) {
+        Engine.reloadShaders();
     }
 
     if (Input.getKeyDown(key.f6)) {

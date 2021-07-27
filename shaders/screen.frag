@@ -11,5 +11,7 @@ void main()
         discard;
     }
 
+    //col.r = 0;
+
     finalColor = col;
 }

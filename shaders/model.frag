@@ -17,6 +17,7 @@ void main()
 {
     // Texel color fetching from texture sampler
     vec4 texelColor = texture(texture0, fragTexCoord);
+    if (texelColor.a == 0.0) discard;
     //texelColor.r = 0;
     // NOTE: Implement here your fragment shader code
     
