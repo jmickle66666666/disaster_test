@@ -138,7 +138,8 @@ float randomAO(vec2 fragCoord)
 
     return ao;
 }
-float pi = 3.14159;
+//float pi = 3.14159;
+float pi = 3.14;
 
 vec4 thing(vec2 uv)
 {
@@ -149,11 +150,13 @@ vec4 thing(vec2 uv)
         length(uv) * 1
     );
 
+
     vec4 col = vec4(0,0,0,1);
     float mult = 24;
     float offset = 10 + time;
 
     puv.x += puv.y/ 1;
+    // return vec4(puv.x, puv.y, 0, 1);
 
     float stripes = smoothstep(0, 0.1, sin(offset + puv.x * pi * mult));
 

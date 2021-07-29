@@ -23,7 +23,7 @@ var sceneList = {
     //"lunaship" : load("scenes/lunaship/lunaship.js"),
 };
 
-Engine.setResolution(320,240,3);
+Engine.setResolution(320,240,2);
 
 // var autoload = "zone editor";
 var autoload = "nothing";

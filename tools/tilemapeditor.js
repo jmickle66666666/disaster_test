@@ -683,7 +683,7 @@ function toolbar()
                 if (index == 6) { 
                     currentTilemap.save(autosavePath);
                     Assets.unload(autosavePath);
-                    var game = load("game.js");
+                    var game = load("plat/game.js");
                     game.levelPath = autosavePath;
                     scenes.switchScene(game);
                 }

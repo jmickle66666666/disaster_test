@@ -142,6 +142,7 @@ var boxPos = {x:0, y:0, z:0};
 
 function update(dt)
 {
+    return;
     if (Input.getKeyDown(key.g)) {
         if (mtoggle) {
             Input.lockMouse();
