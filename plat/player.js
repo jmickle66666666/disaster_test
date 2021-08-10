@@ -1,4 +1,3 @@
-var key = load("lib/keycodes.js");
 var game = load("plat/game.js");
 var gui = load("lib/gui.js");
 var collision = load("lib/collision.js");
@@ -60,8 +59,8 @@ function update(dt)
     var movy = 0;
     if (hurtTimer <= 0) {
         momx = 0;
-        if (Input.getKey(key.left)) momx = -moveSpeed;
-        if (Input.getKey(key.right)) momx = moveSpeed;
+        if (Input.getKey(Key.left)) momx = -moveSpeed;
+        if (Input.getKey(Key.right)) momx = moveSpeed;
         if (momx!=0) {
             if (momx < 0) flipX = 1; else flipX = 0;
         }
@@ -104,7 +103,7 @@ function update(dt)
     }
 
     if (airTime < coyoteTime && hurtTimer <= 0) {
-        if (Input.getKeyDown(key.z)) {
+        if (Input.getKeyDown(Key.z)) {
             momy = -jumpHeight;
         }
     }
@@ -126,7 +125,7 @@ function update(dt)
             spriteFrame = Math.floor((1 + runFrame * 12) % 3);
         } else {
             runFrame = 0;
-            if (Input.getKey(key.up)) {
+            if (Input.getKey(Key.up)) {
                 spriteFrame = 3;
             }
         }
@@ -141,7 +140,7 @@ function update(dt)
 
     collision.bbox(x - game.camera.x + collisionRect.x, y - game.camera.y + collisionRect.y, collisionRect.w, collisionRect.h, this);
 
-    // if (Input.getKeyDown(key.h)) {
+    // if (Input.getKeyDown(Key.h)) {
     //     hurt();
     // }
 

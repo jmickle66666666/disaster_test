@@ -1,6 +1,5 @@
 var game = load("plat/game.js");
 var gui = load("lib/gui.js");
-var key = load("lib/keycodes.js");
 var colors = load("lib/colors.js");
 
 var x;
@@ -13,7 +12,7 @@ function update(dt)
 {
     var playerDist = Math.abs(game.player.x - x) + Math.abs(game.player.y - y);
     if (playerDist < signDistance) {
-        if (Input.getKey(key.up)) {
+        if (Input.getKey(Key.up)) {
             signTimer += dt * 30;
             var m = message.substring(0, Math.min(signTimer, message.length));
             var messageLength = m.length * Draw.fontWidth;

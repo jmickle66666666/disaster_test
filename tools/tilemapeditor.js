@@ -1,7 +1,6 @@
 var tilemap = load("lib/tilemap.js");
 var gui = load("lib/gui.js");
 var colors = load("lib/colors.js");
-var key = load("lib/keycodes.js");
 var scenes = load("lib/scenes.js");
 
 var state = "edit";
@@ -168,7 +167,7 @@ function update(dt)
                 ent.x = Input.mouseX + camera.x - entityDragOffset.x;
                 ent.y = Input.mouseY + camera.y - entityDragOffset.y;
                 
-                if (Input.getKey(key.leftcontrol)) {
+                if (Input.getKey(Key.leftcontrol)) {
                     if (ent.preview != "") {
                         var size = Assets.getTextureSize(ent.preview);
                         Draw.texture(-camera.x + entityDragStart.x - size.w/2, -camera.y + entityDragStart.y - size.h/2, ent.preview);
@@ -179,7 +178,7 @@ function update(dt)
         
                 if (Input.mouseLeftUp) {
                     registerUndo();
-                    if (Input.getKey(key.leftcontrol)) {
+                    if (Input.getKey(Key.leftcontrol)) {
                         currentTilemap.entities.push({
                             script:ent.script,
                             preview:ent.preview,
@@ -208,7 +207,7 @@ function update(dt)
                         currentEntity = hoverEntity;
                     }
         
-                    if (Input.getKey(key.leftcontrol)) {
+                    if (Input.getKey(Key.leftcontrol)) {
                         Draw.texturePart(Input.mouseX + 4, Input.mouseY + 4, iconRects.copy, "tools/sprites/tileicons.png");
                     }
                 }
@@ -384,7 +383,7 @@ function update(dt)
                 false
             );
 
-            if (Input.getKeyUp(key.tab)) {
+            if (Input.getKeyUp(Key.tab)) {
                 state = "edit";
             }
         break;
@@ -524,14 +523,14 @@ function update(dt)
                 }
             }
 
-            // if (Input.getKeyDown(key.key1)) tool = "paint";
-            // if (Input.getKeyDown(key.key2)) tool = "fill";
-            // if (Input.getKeyDown(key.key3)) tool = "entity";
+            // if (Input.getKeyDown(Key.key1)) tool = "paint";
+            // if (Input.getKeyDown(Key.key2)) tool = "fill";
+            // if (Input.getKeyDown(Key.key3)) tool = "entity";
 
             //Draw.texturePart(5, 240 - 32, iconRects[tool], "tools/sprites/tileicons.png");
 
 
-            if (Input.getKeyDown(key.tab)) {
+            if (Input.getKeyDown(Key.tab)) {
                 state = "palette";
             }
         break;
@@ -559,8 +558,8 @@ function update(dt)
         Draw.text(x + 2, y + 2, tooltip, colors.white);
     }
 
-    if (Input.getKeyDown(key.z)) {
-        if (Input.getKey(key.leftcontrol)) {
+    if (Input.getKeyDown(Key.z)) {
+        if (Input.getKey(Key.leftcontrol)) {
             undo();
         }
     }
@@ -571,10 +570,10 @@ function update(dt)
 function cameraControls(dt)
 {
     if (gui.keyboardFocus != -1) return;
-    if (Input.getKey(key.a)) { camera.x -= dt * cameraSpeed };
-    if (Input.getKey(key.d)) { camera.x += dt * cameraSpeed };
-    if (Input.getKey(key.w)) { camera.y -= dt * cameraSpeed };
-    if (Input.getKey(key.s)) { camera.y += dt * cameraSpeed };
+    if (Input.getKey(Key.a)) { camera.x -= dt * cameraSpeed };
+    if (Input.getKey(Key.d)) { camera.x += dt * cameraSpeed };
+    if (Input.getKey(Key.w)) { camera.y -= dt * cameraSpeed };
+    if (Input.getKey(Key.s)) { camera.y += dt * cameraSpeed };
 }
 
 function fill(x, y, newTile)

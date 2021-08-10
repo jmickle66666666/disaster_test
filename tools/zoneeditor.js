@@ -1,5 +1,4 @@
 var gui = load("lib/gui.js");
-var key = load("lib/keycodes.js");
 var colors = load("lib/colors.js");
 var camera = load("lib/camera.js");
 var vmath = load("lib/vmath.js");
@@ -46,18 +45,18 @@ function update(dt)
     if (Input.mouseRight) { camera.fpsControl(dt); }
     if (Input.mouseRightUp) { Input.unlockMouse(); }
 
-    if (Input.getKeyDown(key.leftbracket)) snapSize /= 2;
-    if (Input.getKeyDown(key.rightbracket)) snapSize *= 2;
+    if (Input.getKeyDown(Key.leftbracket)) snapSize /= 2;
+    if (Input.getKeyDown(Key.rightbracket)) snapSize *= 2;
 
-    if (Input.getKeyDown(key.key1)) { currentTool = "select"; tools[currentTool].init(); }
-    if (Input.getKeyDown(key.key2)) { currentTool = "box"; tools[currentTool].init(); }
-    if (Input.getKeyDown(key.key3)) { currentTool = "vertex"; tools[currentTool].init(); }
+    if (Input.getKeyDown(Key.key1)) { currentTool = "select"; tools[currentTool].init(); }
+    if (Input.getKeyDown(Key.key2)) { currentTool = "box"; tools[currentTool].init(); }
+    if (Input.getKeyDown(Key.key3)) { currentTool = "vertex"; tools[currentTool].init(); }
 
-    if (Input.getKeyDown(key.g)) { 
+    if (Input.getKeyDown(Key.g)) { 
         regenerate();        
     }
 
-    if (Input.getKey(key.leftcontrol) && Input.getKeyDown(key.z)) {
+    if (Input.getKey(Key.leftcontrol) && Input.getKeyDown(Key.z)) {
         undo();
     }
 
@@ -198,7 +197,7 @@ var tools = {
                 this.modified = false;
             }
 
-            if (Input.mouseLeftDown && !gui.hovered && !Input.getKey(key.leftshift)) {
+            if (Input.mouseLeftDown && !gui.hovered && !Input.getKey(Key.leftshift)) {
                 this.selection = [];
                 
                 Audio.playSound("tools/sounds/click2.wav");
@@ -291,7 +290,7 @@ var tools = {
             }
 
             if (Input.mouseLeftDown && !gui.hovered) {
-                if (Input.getKey(key.leftshift)) {
+                if (Input.getKey(Key.leftshift)) {
                     if (mouseHit.part != null) {
                         if (this.selection.includes(mouseHit.part)) {
                             this.selection.splice(this.selection.indexOf(mouseHit.part),1);
@@ -370,7 +369,7 @@ var tools = {
         buildUpdate: function(){
             var mouseHit = getMouseHit();
 
-            if (Input.getKeyDown(key.tab)) {
+            if (Input.getKeyDown(Key.tab)) {
                 this.state = "texture";
                 this.textureListOffset = 0;
                 log("woops");

@@ -1,5 +1,4 @@
 var gui = load("lib/gui.js");
-var key = load("lib/keycodes.js");
 var colors = load("lib/colors.js");
 var camera = load("lib/camera.js");
 var vmath = load("lib/vmath.js");
@@ -143,7 +142,7 @@ var boxPos = {x:0, y:0, z:0};
 function update(dt)
 {
     return;
-    if (Input.getKeyDown(key.g)) {
+    if (Input.getKeyDown(Key.g)) {
         if (mtoggle) {
             Input.lockMouse();
         } else {

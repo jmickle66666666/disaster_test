@@ -1,7 +1,6 @@
 var tilemap = load("lib/tilemap.js");
 var colors = load("lib/colors.js");
 var collision = load("lib/collision.js");
-var key = load("lib/keycodes.js");
 
 var levelPath = "maps/zupeworld.json";
 var level;
@@ -44,7 +43,7 @@ function init()
 
 function update(dt)
 {
-    if (Input.getKeyDown(key.f5)) {
+    if (Input.getKeyDown(Key.f5)) {
         collision.debugEnabled = !collision.debugEnabled;
     }
 

@@ -1,32 +1,16 @@
-var key = load("lib/keycodes.js");
 var gui = load("lib/gui.js");
 var scenes = load("lib/scenes.js");
 
 var sceneList = {
-    //"tyrian clone" : load("tyrian/tyrian.js"),
-    //"path editor" : load("tyrian/patheditor.js"),
-    //"asset list test" : load("tyrian/assettest.js"),
-    //"char test" : load("tyrian/chartest.js"),
-    "3d test" : load("3dtests/3dtest.js"),
     "zone editor" : load("tools/zoneeditor.js"),
     "plat game" : load("plat/game.js"),
-    //"sprite editor" : load("tools/spriteeditor.js"),
     "tilemap editor" : load("tools/tilemapeditor.js"),
-    //"brb" : load("brb.js"),
-    //"func" : load("func.js"),
-    //"zigeye" : load("zigeye.js"),
-    //"triangle" : load("triangle.js"),
-    // "laptopZome" : load("scenes/laptopzome.js"),
-    // "transformtests" : load("scenes/transformtests.js"),
-    // "flappy" : load("scenes/flappyskull.js"),
-    // "intro" : load("scenes/intro/intro.js"),
-    //"lunaship" : load("scenes/lunaship/lunaship.js"),
 };
 
 Engine.setResolution(320,240,2);
 
 // var autoload = "zone editor";
-var autoload = "nothing";
+let autoload = "nothing";
 
 Draw.loadFont("lib/fontsmall.png");
 Engine.setMouseVisible(true);
@@ -53,28 +37,29 @@ function mainMenu()
 
 function update(dt)
 {
-    if (Input.getKeyDown(key.f1)) {
+    if (Input.getKeyDown(Key.f1)) {
+        log("test");
         Debug.toggleProfileGraph();
     }
 
-    if (Input.getKeyDown(key.f2)) {
+    if (Input.getKeyDown(Key.f2)) {
         Engine.reset();
         return;
     }
 
-    if (Input.getKeyDown(key.f3)) {
+    if (Input.getKeyDown(Key.f3)) {
         Engine.reloadShaders();
     }
 
-    if (Input.getKeyDown(key.f6)) {
+    if (Input.getKeyDown(Key.f6)) {
         Engine.toggleOverdraw();
     }
 
-    if (Input.getKeyDown(key.f7)) {
+    if (Input.getKeyDown(Key.f7)) {
         Engine.slowDrawFrame(64);
     }
 
-    if (Input.getKeyDown(key.f8)) {
+    if (Input.getKeyDown(Key.f8)) {
         Assets.unloadAll();
     }
 
