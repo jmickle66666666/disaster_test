@@ -3,14 +3,17 @@ var scenes = load("lib/scenes.js");
 
 var sceneList = {
     "zone editor" : load("tools/zoneeditor.js"),
-    "plat game" : load("plat/game.js"),
     "tilemap editor" : load("tools/tilemapeditor.js"),
+    "cellgen" : load("tools/cellulargenerator.js"),
+    "analysis" : load("tools/scriptanalysis.js"),
+    "matrix system" : load("tools/matrixsystem.js"),
+    "console" : load("tools/console.js"),
 };
 
 Engine.setResolution(320,240,2);
 
 // var autoload = "zone editor";
-let autoload = "nothing";
+let autoload = "gdr";
 
 Draw.loadFont("lib/fontsmall.png");
 Engine.setMouseVisible(true);
@@ -38,7 +41,6 @@ function mainMenu()
 function update(dt)
 {
     if (Input.getKeyDown(Key.f1)) {
-        log("test");
         Debug.toggleProfileGraph();
     }
 
@@ -72,5 +74,4 @@ function update(dt)
     } else {
         scenes.scene.update(dt);
     }
-    //gui.button("break", function() { hello(); })
 }

@@ -1,6 +1,5 @@
 var gui = load("lib/gui.js");
 var scenes = load("lib/scenes.js");
-var colors = load("lib/colors.js");
 var spritelist;
 var spritekeys;
 var textures;
@@ -42,7 +41,7 @@ function close()
 
 function update(dt)
 {
-    //Draw.rect(0, 0, 320, 240, colors.nightblue, true);
+    //Draw.rect(0, 0, 320, 240, Color.nightblue, true);
     gui.button("file", function() { showingFiles = !showingFiles });
     if (showingFiles) {
         gui.button("new")
@@ -81,15 +80,15 @@ function update(dt)
             selectTexture = true;
         });
 
-        Draw.texturePart(texturePos.x - sprite.rect.w, texturePos.y, sprite.rect, sprite.texture);
-        Draw.texture(texturePos.x, texturePos.y, sprite.texture);
+        Draw.texture(sprite.texture, texturePos.x - sprite.rect.w, texturePos.y, sprite.rect);
+        Draw.texture(sprite.texture, texturePos.x, texturePos.y);
 
         Draw.rect(
             texturePos.x,
             texturePos.y,
             textureSize.w + 1,
             textureSize.h + 1,
-            colors.darkbrown,
+            Color.darkbrown,
             false
         );
 
@@ -108,8 +107,8 @@ function update(dt)
                 };
             }
 
-            Draw.line(mx, texturePos.y, mx, texturePos.y + textureSize.h, colors.gray);
-            Draw.line(texturePos.x, my, texturePos.x + textureSize.w, my, colors.gray);
+            Draw.line(mx, texturePos.y, mx, texturePos.y + textureSize.h, Color.gray);
+            Draw.line(texturePos.x, my, texturePos.x + textureSize.w, my, Color.gray);
 
             if (Input.mouseLeft) {
                 Draw.rect(
@@ -117,7 +116,7 @@ function update(dt)
                     texturePos.y + dragStart.y,
                     mx - (texturePos.x + dragStart.x),
                     my - (texturePos.y + dragStart.y),
-                    colors.seablue,
+                    Color.seablue,
                     false
                 );
             }
@@ -135,7 +134,7 @@ function update(dt)
             texturePos.y + sprite.rect.y,
             sprite.rect.w + 1,
             sprite.rect.h + 1,
-            colors.slimegreen,
+            Color.slimegreen,
             false
         );
 

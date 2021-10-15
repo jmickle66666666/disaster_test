@@ -1,6 +1,5 @@
 var tilemap = load("lib/tilemap.js");
 var gui = load("lib/gui.js");
-var colors = load("lib/colors.js");
 var scenes = load("lib/scenes.js");
 
 var state = "edit";
@@ -148,9 +147,9 @@ function update(dt)
         
                 // draw them
                 if (ent.preview != "") {
-                    Draw.texture(-camera.x + ent.x - entSize.w/2, -camera.y + ent.y - entSize.h/2, ent.preview);
+                    Draw.texture(ent.preview, -camera.x + ent.x - entSize.w/2, -camera.y + ent.y - entSize.h/2);
                 } else {
-                    Draw.texturePart(-camera.x + ent.x - iconRects.entity.w/2, -camera.y + ent.y - iconRects.entity.h/2, iconRects.entity, "tools/sprites/tileicons.png");
+                    Draw.texture("tools/sprites/tileicons.png", -camera.x + ent.x - iconRects.entity.w/2, -camera.y + ent.y - iconRects.entity.h/2, iconRects.entity);
                 }
             }
         
@@ -170,9 +169,9 @@ function update(dt)
                 if (Input.getKey(Key.leftcontrol)) {
                     if (ent.preview != "") {
                         var size = Assets.getTextureSize(ent.preview);
-                        Draw.texture(-camera.x + entityDragStart.x - size.w/2, -camera.y + entityDragStart.y - size.h/2, ent.preview);
+                        Draw.texture(ent.preview, -camera.x + entityDragStart.x - size.w/2, -camera.y + entityDragStart.y - size.h/2);
                     } else {
-                        Draw.texturePart(-camera.x + entityDragStart.x - iconRects.entity.w/2, -camera.y + entityDragStart.y - iconRects.entity.h/2, iconRects.entity, "tools/sprites/tileicons.png");
+                        Draw.texture("tools/sprites/tileicons.png", -camera.x + entityDragStart.x - iconRects.entity.w/2, -camera.y + entityDragStart.y - iconRects.entity.h/2, iconRects.entity);
                     }
                 }
         
@@ -208,7 +207,7 @@ function update(dt)
                     }
         
                     if (Input.getKey(Key.leftcontrol)) {
-                        Draw.texturePart(Input.mouseX + 4, Input.mouseY + 4, iconRects.copy, "tools/sprites/tileicons.png");
+                        Draw.texture("tools/sprites/tileicons.png", Input.mouseX + 4, Input.mouseY + 4, iconRects.copy);
                     }
                 }
         
@@ -281,14 +280,14 @@ function update(dt)
         
                 if (ent.preview != "") {
                     var size = Assets.getTextureSize(ent.preview);
-                    Draw.texture(320 - size.w, 0, ent.preview);
+                    Draw.texture(ent.preview, 320 - size.w, 0);
                 }
         
                 Draw.rect(
                     -entSize.w/2 + currentTilemap.entities[currentEntity].x - camera.x,
                     -entSize.h/2 + currentTilemap.entities[currentEntity].y - camera.y,
                     entSize.w, entSize.h,
-                    colors.disaster,
+                    Color.disaster,
                     false
                 );
             }
@@ -319,7 +318,7 @@ function update(dt)
                     -entSize.w/2 + currentTilemap.entities[hoverEntity].x - camera.x,
                     -entSize.h/2 + currentTilemap.entities[hoverEntity].y - camera.y,
                     entSize.w, entSize.h,
-                    colors.white,
+                    Color.white,
                     false
                 );
             }
@@ -337,7 +336,7 @@ function update(dt)
         
                 if (gui.lastHovered) {
                     var previewSize = Assets.getTextureSize(textures[i]);
-                    Draw.texture(319 - previewSize.w, 0, textures[i]);
+                    Draw.texture(textures[i], 319 - previewSize.w, 0);
                 }
             }
             break;
@@ -349,23 +348,23 @@ function update(dt)
             currentTilemap.properties.tileWidth = gui.numberField("tile width", currentTilemap.properties.tileWidth);
             currentTilemap.properties.tileHeight = gui.numberField("tile height", currentTilemap.properties.tileHeight);
         
-            Draw.texture(0, gui.y, currentTilemap.properties.texture);
+            Draw.texture(currentTilemap.properties.texture, 0, gui.y);
             if (currentTilemap.properties.tileWidth > 1 && currentTilemap.properties.tileHeight > 1) {
                 var textureSize = Assets.getTextureSize(currentTilemap.properties.texture);
                 for (var i = 0; i <= textureSize.w; i+= currentTilemap.properties.tileWidth) {
-                    Draw.line(i, gui.y, i, gui.y + textureSize.h, colors.gray);
+                    Draw.line(i, gui.y, i, gui.y + textureSize.h, Color.gray);
                 }
                 
                 for (var i = 0; i <= textureSize.h; i+= currentTilemap.properties.tileHeight) {
-                    Draw.line(0, gui.y + i, textureSize.w, gui.y + i, colors.gray);
+                    Draw.line(0, gui.y + i, textureSize.w, gui.y + i, Color.gray);
                 }
             }
         break;   
 
         case "palette":
             drawCanvas();
-            Draw.texture(0, 0, currentTilemap.properties.texture);
-            Draw.rect(mouseX, mouseY, currentTilemap.properties.tileWidth, currentTilemap.properties.tileHeight, colors.white, false);
+            Draw.texture(currentTilemap.properties.texture, 0, 0);
+            Draw.rect(mouseX, mouseY, currentTilemap.properties.tileWidth, currentTilemap.properties.tileHeight, Color.white, false);
 
             if (Input.mouseLeftDown) {
                 if (tileX < numTilesX && tileY < numTilesY) {
@@ -379,7 +378,7 @@ function update(dt)
                 Math.floor(currentTile / numTilesX) * currentTilemap.properties.tileHeight, 
                 currentTilemap.properties.tileWidth, 
                 currentTilemap.properties.tileHeight, 
-                colors.disaster, 
+                Color.disaster, 
                 false
             );
 
@@ -413,14 +412,14 @@ function update(dt)
                 -camera.y + baseRect.y * currentTilemap.properties.tileHeight,
                 baseRect.w * currentTilemap.properties.tileWidth,
                 baseRect.h * currentTilemap.properties.tileHeight,
-                colors.meat,
+                Color.meat,
                 false
             );
 
             if (dragSide == "left" || dragSide == "right") {
-                Draw.texturePart(Input.mouseX - 5, Input.mouseY - 3, iconRects.drag_h, "tools/sprites/tileicons.png");
+                Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 5, Input.mouseY - 3, iconRects.drag_h);
             } else {
-                Draw.texturePart(Input.mouseX - 3, Input.mouseY - 5, iconRects.drag_v, "tools/sprites/tileicons.png");
+                Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 3, Input.mouseY - 5, iconRects.drag_v);
             }
 
             if (Input.mouseLeftUp) {
@@ -452,14 +451,14 @@ function update(dt)
             tileY = Math.floor((Input.mouseY+camera.y) / currentTilemap.properties.tileHeight);
             mouseX = tileX * currentTilemap.properties.tileWidth;
             mouseY = tileY * currentTilemap.properties.tileHeight;
-            Draw.rect(mouseX - camera.x, mouseY - camera.y, currentTilemap.properties.tileWidth, currentTilemap.properties.tileHeight, colors.white, false);
+            Draw.rect(mouseX - camera.x, mouseY - camera.y, currentTilemap.properties.tileWidth, currentTilemap.properties.tileHeight, Color.white, false);
 
             cameraControls(dt);
 
             showPointer = true;
             if (tileX == -1 || tileX == currentTilemap.properties.width) {
                 showPointer = false;
-                Draw.texturePart(Input.mouseX - 5, Input.mouseY - 3, iconRects.drag_h, "tools/sprites/tileicons.png");
+                Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 5, Input.mouseY - 3, iconRects.drag_h);
 
                 if (Input.mouseLeftDown) {
                     registerUndo();
@@ -476,7 +475,7 @@ function update(dt)
 
             } else if (tileY == -1 || tileY == currentTilemap.properties.height) {
                 showPointer = false;
-                Draw.texturePart(Input.mouseX - 3, Input.mouseY - 5, iconRects.drag_v, "tools/sprites/tileicons.png");
+                Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 3, Input.mouseY - 5, iconRects.drag_v);
 
                 if (Input.mouseLeftDown) {
                     registerUndo();
@@ -523,13 +522,6 @@ function update(dt)
                 }
             }
 
-            // if (Input.getKeyDown(Key.key1)) tool = "paint";
-            // if (Input.getKeyDown(Key.key2)) tool = "fill";
-            // if (Input.getKeyDown(Key.key3)) tool = "entity";
-
-            //Draw.texturePart(5, 240 - 32, iconRects[tool], "tools/sprites/tileicons.png");
-
-
             if (Input.getKeyDown(Key.tab)) {
                 state = "palette";
             }
@@ -549,13 +541,13 @@ function update(dt)
 
     toolbar();
     
-    if (showPointer) Draw.texturePart(Input.mouseX, Input.mouseY, iconRects.mouse, "tools/sprites/tileicons.png");
+    if (showPointer) Draw.texture("tools/sprites/tileicons.png", Input.mouseX, Input.mouseY, iconRects.mouse);
     if (tooltip != "") {
         var x = Input.mouseX + 8;
         var y = Input.mouseY - 8;
-        Draw.rect(x, y, 4 + tooltip.length * Draw.fontWidth, 4 + Draw.fontHeight, colors.black, true);
-        Draw.rect(x, y, 4 + tooltip.length * Draw.fontWidth, 4 + Draw.fontHeight, colors.disaster, false);
-        Draw.text(x + 2, y + 2, tooltip, colors.white);
+        Draw.rect(x, y, 4 + tooltip.length * Draw.fontWidth, 4 + Draw.fontHeight, Color.black, true);
+        Draw.rect(x, y, 4 + tooltip.length * Draw.fontWidth, 4 + Draw.fontHeight, Color.disaster, false);
+        Draw.text(x + 2, y + 2, tooltip, Color.white);
     }
 
     if (Input.getKeyDown(Key.z)) {
@@ -599,68 +591,68 @@ function fill(x, y, newTile)
 
 function toolbar()
 {
-    Draw.line(0, Draw.screenHeight - 17, Draw.screenWidth, Draw.screenHeight - 17, colors.disaster);
-    Draw.rect(0, Draw.screenHeight - 16, Draw.screenWidth, 16, colors.brown, true);
+    Draw.line(0, Draw.screenHeight - 17, Draw.screenWidth, Draw.screenHeight - 17, Color.disaster);
+    Draw.rect(0, Draw.screenHeight - 16, Draw.screenWidth, 16, Color.brown, true);
 
-    if (state == "properties") { Draw.rect(0, Draw.screenHeight - 16, 16, 16, colors.disaster, true); }
-    if (state == "edit" && tool == "paint") { Draw.rect(16, Draw.screenHeight - 16, 16, 16, colors.disaster, true); }
-    if (state == "edit" && tool == "fill") { Draw.rect(32, Draw.screenHeight - 16, 16, 16, colors.disaster, true); }
-    //if (state == "edit" && tool == "entity") { Draw.rect(48, Draw.screenHeight - 16, 16, 16, colors.disaster, true); }
-    if (state == "entityEditor") { Draw.rect(48, Draw.screenHeight - 16, 16, 16, colors.disaster, true); }
+    if (state == "properties") { Draw.rect(0, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
+    if (state == "edit" && tool == "paint") { Draw.rect(16, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
+    if (state == "edit" && tool == "fill") { Draw.rect(32, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
+    //if (state == "edit" && tool == "entity") { Draw.rect(48, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
+    if (state == "entityEditor") { Draw.rect(48, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
 
-    Draw.texturePart(
+    Draw.texture(
+        "tools/sprites/tileicons.png",
         8 - iconRects.settings.w/2, 
         Draw.screenHeight - 8 - iconRects.settings.h/2, 
-        iconRects.settings,
-        "tools/sprites/tileicons.png"
+        iconRects.settings
     );
 
-    Draw.texturePart(
+    Draw.texture(
+        "tools/sprites/tileicons.png",
         16 + 8 - iconRects.paint.w/2, 
         Draw.screenHeight - 8 - iconRects.paint.h/2, 
-        iconRects.paint,
-        "tools/sprites/tileicons.png"
+        iconRects.paint
     );
 
-    Draw.texturePart(
+    Draw.texture(
+        "tools/sprites/tileicons.png",
         32 + 8 - iconRects.fill.w/2, 
         Draw.screenHeight - 8 - iconRects.fill.h/2, 
-        iconRects.fill,
-        "tools/sprites/tileicons.png"
+        iconRects.fill
     );
 
-    Draw.texturePart(
+    Draw.texture(
+        "tools/sprites/tileicons.png",
         48 + 8 - iconRects.entity.w/2, 
         Draw.screenHeight - 8 - iconRects.entity.h/2, 
-        iconRects.entity,
-        "tools/sprites/tileicons.png"
+        iconRects.entity
     );
 
-    Draw.texturePart(
+    Draw.texture(
+        "tools/sprites/tileicons.png",
         64 + 8 - iconRects.save.w/2, 
         Draw.screenHeight - 8 - iconRects.save.h/2, 
-        iconRects.save,
-        "tools/sprites/tileicons.png"
+        iconRects.save
     );
 
-    Draw.texturePart(
+    Draw.texture(
+        "tools/sprites/tileicons.png",
         80 + 8 - iconRects.load.w/2, 
         Draw.screenHeight - 8 - iconRects.load.h/2, 
-        iconRects.load,
-        "tools/sprites/tileicons.png"
+        iconRects.load
     );
 
-    Draw.texturePart(
+    Draw.texture(
+        "tools/sprites/tileicons.png",
         96 + 8 - iconRects.play.w/2, 
         Draw.screenHeight - 8 - iconRects.play.h/2, 
-        iconRects.play,
-        "tools/sprites/tileicons.png"
+        iconRects.play
     );
 
     if (Input.mouseY >= Draw.screenHeight-16) {
         if (Input.mouseX < 16*7) {
             var index = Math.floor(Input.mouseX / 16);
-            Draw.rect(index * 16, Draw.screenHeight - 16, 16, 16, colors.white, false);
+            Draw.rect(index * 16, Draw.screenHeight - 16, 16, 16, Color.white, false);
 
             if (index == 0) { tooltip = "properties"; }
             if (index == 1) { tooltip = "paint"; }
@@ -705,7 +697,7 @@ function toolbar()
 
 function drawCanvas()
 {
-    Draw.rect(0, 0, 320, 240, colors.darkbrown, true);
+    Draw.rect(0, 0, 320, 240, Color.darkbrown, true);
 
     
     camera.x = Math.floor(camera.x);
@@ -713,9 +705,9 @@ function drawCanvas()
 
     var canvasSize = {w: currentTilemap.properties.width * currentTilemap.properties.tileWidth, h: currentTilemap.properties.height * currentTilemap.properties.tileHeight};
 
-    Draw.rect(-camera.x, -camera.y, canvasSize.w, canvasSize.h, colors.black, true);
-    Draw.rect(-camera.x-1, -camera.y-1, 2 + canvasSize.w, 2 + canvasSize.h, colors.skyblue, false);
-    Draw.line(-camera.x, 2-camera.y-1 + canvasSize.h, -1-camera.x + canvasSize.w, 2-camera.y-1 + canvasSize.h, colors.black);
+    Draw.rect(-camera.x, -camera.y, canvasSize.w, canvasSize.h, Color.black, true);
+    Draw.rect(-camera.x-1, -camera.y-1, 2 + canvasSize.w, 2 + canvasSize.h, Color.skyblue, false);
+    Draw.line(-camera.x, 2-camera.y-1 + canvasSize.h, -1-camera.x + canvasSize.w, 2-camera.y-1 + canvasSize.h, Color.black);
     currentTilemap.render(-camera.x, -camera.y);
 }
 

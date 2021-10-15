@@ -1,5 +1,4 @@
 var gui = load("lib/gui.js");
-var colors = load("lib/colors.js");
 var camera = load("lib/camera.js");
 var vmath = load("lib/vmath.js");
 var zone = load("lib/zone.js");
@@ -211,13 +210,13 @@ var tools = {
                     {
                         var p = Draw.worldToScreenPoint(part.data.vertices[j]);
                         if (vmath.distance(p, {x:Input.mouseX, y:Input.mouseY}) < 6) {
-                            Draw.circle(p.x, p.y, 3.5, colors.disaster, true);
+                            Draw.circle(p.x, p.y, 3.5, Color.disaster, true);
                             if (Input.mouseLeftDown && !gui.hovered) {
                                 this.selection.push({vertex: j, part: part});
                                 Audio.playSound("tools/sounds/click3.wav");
                             }
                         } else {
-                            Draw.circle(p.x, p.y, 3.5, colors.disaster, false);
+                            Draw.circle(p.x, p.y, 3.5, Color.disaster, false);
                         }
                     }
                 }
@@ -226,7 +225,7 @@ var tools = {
             for (var i = 0; i < this.selection.length; i++)
             {
                 var p = Draw.worldToScreenPoint(this.selection[i].part.data.vertices[this.selection[i].vertex]);
-                Draw.circle(p.x, p.y, 3.5, colors.white, true);
+                Draw.circle(p.x, p.y, 3.5, Color.white, true);
             }
 
             if (Input.mouseLeftDown && !gui.hovered) {
@@ -251,7 +250,7 @@ var tools = {
                 
                 for (var i = 0; i < this.selection.length; i++)
                 {
-                    zone.renderPartWireframe(this.selection[i], colors.disaster);
+                    zone.renderPartWireframe(this.selection[i], Color.disaster);
                 }
                 var tempPos = vmath.copy(this.position);
                 var pos = this.position;
@@ -323,7 +322,7 @@ var tools = {
             }
 
             if (mouseHit.part != null /*&& !this.selection.includes(mouseHit.part)*/) {
-                zone.renderPartWireframe(mouseHit.part, colors.white);
+                zone.renderPartWireframe(mouseHit.part, Color.white);
             }
         }
     },
@@ -362,7 +361,7 @@ var tools = {
         
                 if (gui.lastHovered) {
                     var previewSize = Assets.getTextureSize(textures[i]);
-                    Draw.texture(Draw.screenWidth - 1 - previewSize.w, 0, textures[i]);
+                    Draw.texture(textures[i], Draw.screenWidth - 1 - previewSize.w, 0);
                 }
             }
         },
@@ -404,8 +403,8 @@ var tools = {
                     }
 
                     var screenPoint = Draw.worldToScreenPoint(mouseHit.position);
-                    Draw.circle(screenPoint.x, screenPoint.y, 5, colors.white, false);
-                    //drawLine(mouseHit.position, vmath.add(mouseHit.position, this.dragPlane.normal), colors.meat);
+                    Draw.circle(screenPoint.x, screenPoint.y, 5, Color.white, false);
+                    //drawLine(mouseHit.position, vmath.add(mouseHit.position, this.dragPlane.normal), Color.meat);
 
                     var start = vmath.copy(this.dragStart);
                     var end = vmath.copy(mouseHit.position);
@@ -426,10 +425,10 @@ var tools = {
                     b[domVecNames.ndb] = start[domVecNames.ndb];
                     b[domVecNames.dom] = getPlanePoint(domVecNames.nda, domVecNames.ndb, domVecNames.dom, end[domVecNames.nda], start[domVecNames.ndb], this.dragPlane);
 
-                    drawLine(start, a, colors.disaster);
-                    drawLine(a, end, colors.disaster);
-                    drawLine(end, b, colors.disaster);
-                    drawLine(b, start, colors.disaster);
+                    drawLine(start, a, Color.disaster);
+                    drawLine(a, end, Color.disaster);
+                    drawLine(end, b, Color.disaster);
+                    drawLine(b, start, Color.disaster);
 
                     this.points = [start, a, end, b];
                 }
@@ -442,10 +441,10 @@ var tools = {
 
                 if (this.state == "extruding")
                 {
-                    drawLine(this.points[0], this.points[1], colors.disaster);
-                    drawLine(this.points[1], this.points[2], colors.disaster);
-                    drawLine(this.points[2], this.points[3], colors.disaster);
-                    drawLine(this.points[3], this.points[0], colors.disaster);
+                    drawLine(this.points[0], this.points[1], Color.disaster);
+                    drawLine(this.points[1], this.points[2], Color.disaster);
+                    drawLine(this.points[2], this.points[3], Color.disaster);
+                    drawLine(this.points[3], this.points[0], Color.disaster);
 
                     var cross = vmath.normalise(vmath.cross(this.dragPlane.normal, Draw.getCameraTransform().forward));
                     var normal = vmath.cross(cross, this.dragPlane.normal);
@@ -471,15 +470,15 @@ var tools = {
                     var c = vmath.add(this.points[2], this.extrusion);
                     var d = vmath.add(this.points[3], this.extrusion);
 
-                    drawLine(a, b, colors.disaster);
-                    drawLine(b, c, colors.disaster);
-                    drawLine(c, d, colors.disaster);
-                    drawLine(d, a, colors.disaster);
+                    drawLine(a, b, Color.disaster);
+                    drawLine(b, c, Color.disaster);
+                    drawLine(c, d, Color.disaster);
+                    drawLine(d, a, Color.disaster);
 
-                    drawLine(this.points[0], a, colors.orange);
-                    drawLine(this.points[1], b, colors.orange);
-                    drawLine(this.points[2], c, colors.orange);
-                    drawLine(this.points[3], d, colors.orange);
+                    drawLine(this.points[0], a, Color.orange);
+                    drawLine(this.points[1], b, Color.orange);
+                    drawLine(this.points[2], c, Color.orange);
+                    drawLine(this.points[3], d, Color.orange);
                 }
 
                 if (Input.mouseLeftDown && this.state == "extruding")
@@ -526,6 +525,6 @@ function getPlanePoint(knownAxisA, knownAxisB, unknownAxis, coordA, coordB, plan
 function drawNormalCursor(mouseHit)
 {
     var screenPoint = Draw.worldToScreenPoint(mouseHit.position);
-    Draw.circle(screenPoint.x, screenPoint.y, 5.5 + Math.sin(time * 3), colors.white, false);
-    drawLine(mouseHit.position, vmath.add(mouseHit.position, mouseHit.normal), colors.meat);
+    Draw.circle(screenPoint.x, screenPoint.y, 5.5 + Math.sin(time * 3), Color.white, false);
+    drawLine(mouseHit.position, vmath.add(mouseHit.position, mouseHit.normal), Color.meat);
 }

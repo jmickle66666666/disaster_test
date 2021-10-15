@@ -73,7 +73,7 @@ float aoAt(vec2 fragCoord)
 
     vec3 random = rand3dTo3d(vec3(fgx, fgy, 1.0));
     float depth = linearizeDepth(texture2D(depthTexture, fragTexCoord).r);
-    float radius = 0.002;
+    float radius = 0.0004;
     float radius_depth = radius/depth;
     float occlusion = 0.0;
     vec3 position = vec3(fragTexCoord, depth);
@@ -168,32 +168,122 @@ vec4 thing(vec2 uv)
     return col;
 }
 
+float noise1(float x)
+{
+    return fract(sin(x * 123.245) + tan(x * 459.31));
+}
+
+float noise2(vec2 x)
+{
+    return noise1(noise1(x.x) + noise1(x.y * 3.52623734));
+}
+
+float noiseLayer(vec2 uv, int res)
+{
+    
+    
+    vec2 iuv = floor(uv * res) / res;
+    vec2 duv = (uv - iuv) * res;
+    vec2 uv2 = iuv + vec2(1.01/res, 1.01/res);
+    uv2 = floor(uv2 * res) / res;
+    float noise00 = noise2(iuv);
+    float noise10 = noise2(vec2(uv2.x, iuv.y));
+    float noise01 = noise2(vec2(iuv.x, uv2.y));
+    float noise11 = noise2(uv2);
+
+    float noiseX1 = mix(noise00, noise10, duv.x);
+    float noiseX2 = mix(noise01, noise11, duv.x);
+    float noiseY = mix(noiseX1, noiseX2, duv.y);
+    
+    return noiseY;
+}
+
+float layeredNoise(vec2 uv, int quality, int steps)
+{
+    float output = 0;
+    int power = 1;
+    for (int i = 1; i <= steps; i++)
+    {
+        int q = quality * power;
+        power *= 2;
+        output += clamp(noiseLayer(uv, q) / (0.5 * power), 0, 1);
+    }
+    return output/2;
+}
+
+vec4 thing2(vec2 uv)
+{
+    float o = layeredNoise(uv, 4, 64);
+    return vec4(o, o, o, 1);
+}
+
+const float[] psx_dither_table = float[16](0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5);
+
+vec3 DitherCrunch(vec3 col, vec2 p){
+    col*=255.0; //extrapolate 16bit color float to 16bit integer space
+    float dither = psx_dither_table[(int(p.x) % 4) + ((int(p.y) % 4) * 4)];
+    col += (dither / 2.0 - 0.0); //dithering process as described in PSYDEV SDK documentation
+    
+    vec3 ca = vec3(
+        int(col.x) & 248,
+        int(col.y) & 248,
+        int(col.z) & 248
+    );
+
+    col = mix(ca, vec3(248, 248, 248), step(248.0,col)); 
+    col /= 255; //bring color back to floating point number space
+    return col;
+}
 
 void main()
 {
-    // fragTexCoord.x = floor(fragTexCoord.x / 320.0) * 320.0;
+    //fragTexCoord.x = floor(fragTexCoord.x / screenSize.x) * screenSize.x;
+    vec2 fg = vec2(fragTexCoord.x, fragTexCoord.y);
     // fragTexCoord.x = x;
-    vec4 col = texture(texture0, fragTexCoord);
+    vec4 col = texture(texture0, fg);
 
-
+    fg.x = floor(fg.x * screenSize.x) / screenSize.x;
+    fg.y = floor(fg.y * screenSize.y) / screenSize.y;
+    //fragTexCoord.r *= screenSize.r;
     // col.xyz = normalAt(fragTexCoord);
 
     
     //float ao = multiAO(fragTexCoord);
     // float ao = aoAt(fragTexCoord);
-    float ao = randomAO(fragTexCoord);
+    float ao = randomAO(fg);
     
-    vec3 normal = normalAt(fragTexCoord);
+    vec3 normal = normalAt(fg);
     float upness = clamp(-normal.y, 0, 1);
     // upness /= 2;
     // upness += .5;
     upness = 0-step(upness, 0.001);
 
-    finalColor = (col * ao) + upness*0.05;
+    finalColor = (col * ao);// + upness*0.05;
 
-    //finalColor = thing(fragTexCoord);
+    
 
     //finalColor = vec4(ao, ao,ao, 1.0);
     // finalColor = vec4(upness, upness,upness, 1.0);
+    float d = -.1 + linearizeDepth(texture2D(depthTexture, fg).r) * 10;
+    
+    if (d > 5) {
+
+        vec4 top = vec4(0.2, 0.15, 0.11, 1);
+        vec4 bottom = vec4(0, 0, 0, 1);
+        vec4 sky = mix(top, bottom, fg.y);
+        finalColor = sky;
+    } else {
+
+        if (d > 1) d = 1;
+        if (d < 0) d = 0;
+        finalColor -= d;
+    }
+    finalColor = clamp(finalColor, 0, 1);
+    vec3 d2 = DitherCrunch(finalColor.rgb, fg * screenSize.xy);
+    finalColor.rgb = d2;
+
+    //finalColor = thing2(fragTexCoord);
+
+    //finalColor = vec4(ao, ao, ao, 1);
 }
 
