@@ -1,53 +1,31 @@
 var gui = load("lib/gui.js");
 var scenes = load("lib/scenes.js");
+var console = load("tools/console.js");
 
-var sceneList = {
-    "zone editor" : load("tools/zoneeditor.js"),
-    "tilemap editor" : load("tools/tilemapeditor.js"),
-    "cellgen" : load("tools/cellulargenerator.js"),
-    "analysis" : load("tools/scriptanalysis.js"),
-    "matrix system" : load("tools/matrixsystem.js"),
-    "console" : load("tools/console.js"),
-};
+function init() {
+    Engine.setResolution(320,240,2);
+    Draw.loadFont("lib/fontsmall.png");
+    Engine.setMouseVisible(true);
+    gui.init();
+    console.init();
 
-Engine.setResolution(320,240,2);
+    // load a default scene here!
+    //scenes.openScene(load("mycoolgame.js"));
 
-// var autoload = "zone editor";
-let autoload = "console";
-
-Draw.loadFont("lib/fontsmall.png");
-Engine.setMouseVisible(true);
-
-function mainMenu()
-{
-    gui.label("disaster engine 5");
-    gui.label("(c) jazz mickle technocorp");
-    gui.space(5);
-
-    var sceneKeys = Object.keys(sceneList);
-    for (var i = 0; i < sceneKeys.length; i++) {
-        gui.button(sceneKeys[i], function() {scenes.switchScene(sceneList[sceneKeys[i]])});
-    }
-    
-    gui.space(5);
-    gui.button("reset", function() { Engine.reset(); });
-    gui.button("quit", function() { Engine.quit(); });
-
-    if (sceneList[autoload] != undefined) {
-        scenes.switchScene(sceneList[autoload]);
-    }
+    initialised = true;
 }
+
+let initialised = false;
 
 function update(dt)
 {
+    if (!initialised) {
+        init();
+    }
+
     if (Input.getKeyDown(Key.f1)) {
         Debug.toggleProfileGraph();
     }
-
-    // if (Input.getKeyDown(Key.f2)) {
-    //     Engine.reset();
-    //     return;
-    // }
 
     if (Input.getKeyDown(Key.f3)) {
         Engine.reloadShaders();
@@ -67,11 +45,8 @@ function update(dt)
 
     Draw.clear();
     gui.reset();
-
     
-    if (scenes.scene == null) {
-        mainMenu();
-    } else {
-        scenes.scene.update(dt);
-    }
+    if (scenes.sceneStack.length == 0) console.active = true;
+    scenes.update(dt);
+    console.update(dt);
 }

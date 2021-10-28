@@ -1,5 +1,9 @@
 let gui = load("lib/gui.js");
+let scenes = load("lib/scenes.js");
 var iconRect = {x:0, y:0, w:17, h:5};
+
+var active = false;
+var toggleKey = Key.f5;
 
 let icons = [];
 let clickedIcon = -1;
@@ -8,6 +12,8 @@ let deltatime = 0;
 let assetPaths = "";
 let files = null;
 let filepreview = "";
+let iconBackground = {r:0, g:0, b:0, a:180};
+let sidebarwidth = 80;
 
 function init()
 {
@@ -15,27 +21,40 @@ function init()
     rootIcons();
 }
 
+function update(dt)
+{
+    if (Input.getKeyDown(toggleKey)) active =! active;
+    if (!active) return;
+    
+    // this is a hack to make sure gui calls work correctly.
+    // to make sure the gui of the open scene doesn't work while the console is open, gui checks 
+    // to see if the console is active. to then use gui in the console itself, we pretend its not active
+    active = false; 
+
+    deltatime = dt;
+    sidebar(Draw.screenWidth - sidebarwidth, 0, sidebarwidth, Draw.screenHeight);
+    //commandConsole(0, Draw.screenHeight - (Draw.fontHeight+2), Draw.screenWidth-64, Draw.fontHeight + 2);
+    if (filepreview != "") {
+        filePreview(8, 16, Draw.screenWidth - sidebarwidth - 8, 240 - 48);
+    } else {
+        fileList(16, 16);
+    }
+
+    drawIcons(0, 0, Draw.screenWidth - sidebarwidth, Draw.screenHeight);
+
+    active = true;
+}
+
 function rootIcons()
 {
     genIcons([
         {id:1, text:"main.js", onClick:function() {readObject(rootObject, null, true)}},
         {id:0, text:"loaded assets", onClick:function() { readDir(""); }},
+        {id:0, text:"tools", onClick:function() { loadTools();}},
+        {id:2, text:"close scene", onClick:function() {scenes.closeScene();}},
         {id:2, text:"reset", onClick:function() {Engine.reset();}},
-        {id:2, text:"quit", onClick:function() {Engine.quit();}}
+        {id:2, text:"quit", onClick:function() {Engine.quit();}},
     ], false);
-}
-
-function assetMenu()
-{
-    // genIcons([
-    //     {id:2, text:"scripts", onClick:function() {log("scripts")}},
-    //     {id:3, text:"textures", onClick:function() {log("textures")}},
-    //     {id:4, text:"models", onClick:function() {log("models")}},
-    //     {id:5, text:"audio", onClick:function() {log("audio")}},
-    //     {id:6, text:"music", onClick:function() {log("music")}},
-    //     {id:7, text:"shaders", onClick:function() {log("shaders")}},
-    //     {id:8, text:"textfiles", onClick:function() {log("textfiles")}},
-    // ]);
 }
 
 function readDir(directory)
@@ -43,6 +62,24 @@ function readDir(directory)
     icons = [];
     files = listDir(directory);
     files.currentDir = directory;
+}
+
+function loadTools()
+{
+    genIcons([
+        {id:0, text:"cellular generator", onClick:function() {openScene("tools/cellulargenerator.js")}},
+        //{id:0, text:"matrix system", onClick:function() {openScene("tools/matrixsystem.js")}},
+        //{id:0, text:"sprite editor", onClick:function() {openScene("tools/spriteeditor.js")}},
+        //{id:0, text:"tilemap editor", onClick:function() {openScene("tools/tilemapeditor.js")}}, // this is broken
+        //{id:0, text:"zone editor", onClick:function() {openScene("tools/zoneeditor.js")}},
+        {id:0, text:"back", onClick:function() { rootIcons(); }},
+    ])
+}
+
+function openScene(scenePath)
+{
+    scenes.openScene(load(scenePath));
+    active = false;
 }
 
 function listDir(directory)
@@ -135,17 +172,7 @@ function readObject(target, backTarget = null, ignoreFunctions = false)
     genIcons(list);
 }
 
-function update(dt)
-{
-    deltatime = dt;
-    sidebar(Draw.screenWidth - 64, 0, 64, Draw.screenHeight);
-    commandConsole(0, Draw.screenHeight - (Draw.fontHeight+2), Draw.screenWidth-64, Draw.fontHeight + 2);
-    if (filepreview != "") {
-        filePreview(8, 16, 320 - 8 - 64, 240 - 48);
-    } else {
-        fileList(16, 16);
-    }
-}
+
 
 function filePreview(x, y, width, height)
 {
@@ -274,14 +301,25 @@ function sidebar(x, y, width, height)
     dtGraph(x, y, width - 8, 32);
     y += 38;
 
-    //ultraBar(x, y, width, 32);
+    gui.y = y;
+    gui.x = x;
+    gui.label("scenes: "+scenes.sceneStack.length);
+    for (let i = 0; i < scenes.sceneStack.length; i++)
+    {
+        gui.label(scenes.sceneStack[i].path);
+    }
 
-    drawIcons();
+    gui.y += 7;
+    gui.label("loaded");
+    gui.label("assets: "+Assets.loadedAssetCount());
+
+    //ultraBar(x, y, width, 32);
 }
 
 let anyIconsHovered = false;
-function drawIcons()
+function drawIcons(x, y, width, height)
 {
+    Draw.rect(x, y, width, height, iconBackground, true);
     anyIconsHovered = false;
     for (let i = 0; i < icons.length; i++)
     {
@@ -308,7 +346,7 @@ function genIcons(iconList, boring = true)
     clickedIcon = -1;
     let count = iconList.length;
     icons = [];
-    let width = 320 - 64;
+    let width = 320 - sidebarwidth;
     let height = 240 - 16;
 
     if (!boring) {
@@ -430,7 +468,7 @@ function icon(icon, x, y, clicked)
     Draw.text(icon.text, x + 3, y + 10, clicked?Color.white:Color.gray);
     if (hovering) anyIconsHovered = true;
     if (clicked && hovering &&Input.mouseLeftDown) {
-        clicked = false;
+        clickedIcon = -1;
         icon.onClick();
         return false;
     }
