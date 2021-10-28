@@ -49,7 +49,7 @@ function rootIcons()
 {
     genIcons([
         {id:1, text:"main.js", onClick:function() {readObject(rootObject, null, true)}},
-        {id:0, text:"loaded assets", onClick:function() { readDir(""); }},
+        {id:0, text:"assets", onClick:function() { readDir(""); }},
         {id:0, text:"tools", onClick:function() { loadTools();}},
         {id:2, text:"close scene", onClick:function() {scenes.closeScene();}},
         {id:2, text:"reset", onClick:function() {Engine.reset();}},
