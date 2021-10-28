@@ -13,7 +13,7 @@ var sceneList = {
 Engine.setResolution(320,240,2);
 
 // var autoload = "zone editor";
-let autoload = "gdr";
+let autoload = "console";
 
 Draw.loadFont("lib/fontsmall.png");
 Engine.setMouseVisible(true);
@@ -44,10 +44,10 @@ function update(dt)
         Debug.toggleProfileGraph();
     }
 
-    if (Input.getKeyDown(Key.f2)) {
-        Engine.reset();
-        return;
-    }
+    // if (Input.getKeyDown(Key.f2)) {
+    //     Engine.reset();
+    //     return;
+    // }
 
     if (Input.getKeyDown(Key.f3)) {
         Engine.reloadShaders();
