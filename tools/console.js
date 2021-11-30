@@ -313,13 +313,20 @@ function sidebar(x, y, width, height)
     gui.label("loaded");
     gui.label("assets: "+Assets.loadedAssetCount());
 
+    gui.y += 7;
+    gui.button("reset", function() { Engine.reset(); });
+    gui.button("reload assets", function() { Assets.unloadAll(); });
+    gui.button("reload shaders", function() { Engine.reloadShaders(); });
+
     //ultraBar(x, y, width, 32);
 }
 
 let anyIconsHovered = false;
 function drawIcons(x, y, width, height)
 {
-    Draw.rect(x, y, width, height, iconBackground, true);
+    if (icons.length > 0) {
+        Draw.rect(x, y, width, height, iconBackground, true);
+    }
     anyIconsHovered = false;
     for (let i = 0; i < icons.length; i++)
     {

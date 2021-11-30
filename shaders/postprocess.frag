@@ -73,9 +73,9 @@ float aoAt(vec2 fragCoord)
 
     vec3 random = rand3dTo3d(vec3(fgx, fgy, 1.0));
     float depth = linearizeDepth(texture2D(depthTexture, fragTexCoord).r);
-    float radius = 0.0004;
+    float radius = 0.002;
     float radius_depth = radius/depth;
-    float occlusion = 0.0;
+    float occlusion = .0;
     vec3 position = vec3(fragTexCoord, depth);
     vec3 normal = normalAt(fragTexCoord);
     const float falloff = 0.0000001;
@@ -264,14 +264,23 @@ void main()
 
     //finalColor = vec4(ao, ao,ao, 1.0);
     // finalColor = vec4(upness, upness,upness, 1.0);
-    float d = -.1 + linearizeDepth(texture2D(depthTexture, fg).r) * 10;
-    
+    float d = -.1 + linearizeDepth(texture2D(depthTexture, fg).r) * 5;
+    //d = 0;
     if (d > 5) {
 
-        vec4 top = vec4(0.2, 0.15, 0.11, 1);
+        vec4 top = vec4(1.0, 0.6, 0.0, 1) * 0.6;
         vec4 bottom = vec4(0, 0, 0, 1);
-        vec4 sky = mix(top, bottom, fg.y);
+
+        float stripe = (fragTexCoord.x / screenSize.y) + (fragTexCoord.y / screenSize.x);
+        //stripe += time * 0.01;
+        stripe *= 1000;
+        stripe = mod(stripe, 1.0);
+        vec4 sky = mix(top, bottom, step(stripe, 0.5));
+        //vec4 sky = mix(top, bottom, fg.y);
+
         finalColor = sky;
+        finalColor = vec4(1,0.75,0.0,1.0);
+        finalColor = vec4(0,0,0,1.0);
     } else {
 
         if (d > 1) d = 1;
@@ -281,6 +290,8 @@ void main()
     finalColor = clamp(finalColor, 0, 1);
     vec3 d2 = DitherCrunch(finalColor.rgb, fg * screenSize.xy);
     finalColor.rgb = d2;
+
+    
 
     //finalColor = thing2(fragTexCoord);
 

@@ -4,18 +4,21 @@ var console = load("tools/console.js");
 
 function init() {
     Engine.setResolution(320,240,2);
+    Engine.setTargetFPS(60);
     Draw.loadFont("lib/fontsmall.png");
+    Draw.setFOV(90);
     Engine.setMouseVisible(true);
     gui.init();
     console.init();
 
     // load a default scene here!
-    //scenes.openScene(load("mycoolgame.js"));
+    scenes.openScene(load("voxthing.js"));
 
     initialised = true;
 }
 
 let initialised = false;
+//fdsjg
 
 function update(dt)
 {
@@ -36,7 +39,7 @@ function update(dt)
     }
 
     if (Input.getKeyDown(Key.f7)) {
-        Engine.slowDrawFrame(64);
+        Engine.slowDrawFrame(2);
     }
 
     if (Input.getKeyDown(Key.f8)) {
@@ -46,7 +49,10 @@ function update(dt)
     Draw.clear();
     gui.reset();
     
-    if (scenes.sceneStack.length == 0) console.active = true;
+    if (scenes.sceneStack.length == 0) {
+        console.active = true;
+    }
+    
     scenes.update(dt);
     console.update(dt);
 }
