@@ -48,8 +48,7 @@ function buildMesh()
         {x: width, y: height, z: depth},
         "voxtex.png",
         {x: 16, y: 16},
-        data,
-        []
+        data
     );
 }
 
