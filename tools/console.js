@@ -94,7 +94,7 @@ function listDir(directory)
 
         let slashIndex = path.indexOf("\\", dirLen+1);
         if (slashIndex != -1) { // its a subdirectory
-            let pathDir = path.substring(0, path.indexOf("\\", dirLen+1));
+            let pathDir = path.substring(0, path.indexOf("\\", dirLen+1)+1);
             
             if (pathDir == "\\.git") continue;
     
@@ -221,7 +221,7 @@ function fileList(x, y)
             files = null;
             rootIcons();
         } else {
-            let newDir = files.currentDir.substring(0, files.currentDir.lastIndexOf('\\'));
+            let newDir = files.currentDir.substring(0, files.currentDir.lastIndexOf('\\', files.currentDir.length -2));
             files = null;
             readDir(newDir);
         }
@@ -254,7 +254,7 @@ function fileList(x, y)
         Draw.texture("tools/sprites/consoleicons.png", x, y+2, iconRect);
         gui.x = x + 19;
         gui.y = y;
-        gui.button(files.files[i], function() { filepreview = files.files[i].substring(1); filebreak = true;});
+        gui.button(files.files[i], function() { filepreview = files.files[i]; filebreak = true;});
         y += 8;
         if (filebreak) return;
     }
