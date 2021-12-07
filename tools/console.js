@@ -9,15 +9,15 @@ let icons = [];
 let clickedIcon = -1;
 let rootObject = this;
 let deltatime = 0;
-let assetPaths = "";
-let files = null;
-let filepreview = "";
+//let assetPaths = "";
+// let files = null;
+// let filepreview = "";
 let iconBackground = {r:0, g:0, b:0, a:180};
 let sidebarwidth = 80;
 
 function init()
 {
-    assetPaths = Assets.list().split(',');
+    //assetPaths = Assets.list().split(',');
     rootIcons();
 }
 
@@ -34,11 +34,11 @@ function update(dt)
     deltatime = dt;
     sidebar(Draw.screenWidth - sidebarwidth, 0, sidebarwidth, Draw.screenHeight);
     //commandConsole(0, Draw.screenHeight - (Draw.fontHeight+2), Draw.screenWidth-64, Draw.fontHeight + 2);
-    if (filepreview != "") {
-        filePreview(8, 16, Draw.screenWidth - sidebarwidth - 8, 240 - 48);
-    } else {
-        fileList(16, 16);
-    }
+    // if (filepreview != "") {
+    //     filePreview(8, 16, Draw.screenWidth - sidebarwidth - 8, 240 - 48);
+    // } else {
+    //     fileList(16, 16);
+    // }
 
     drawIcons(0, 0, Draw.screenWidth - sidebarwidth, Draw.screenHeight);
 
@@ -49,7 +49,7 @@ function rootIcons()
 {
     genIcons([
         {id:1, text:"main.js", onClick:function() {readObject(rootObject, null, true)}},
-        {id:0, text:"assets", onClick:function() { readDir(""); }},
+        //{id:0, text:"assets", onClick:function() { readDir(""); }},
         {id:0, text:"tools", onClick:function() { loadTools();}},
         {id:2, text:"close scene", onClick:function() {scenes.closeScene();}},
         {id:2, text:"reset", onClick:function() {Engine.reset();}},
@@ -57,12 +57,12 @@ function rootIcons()
     ], false);
 }
 
-function readDir(directory)
-{
-    icons = [];
-    files = listDir(directory);
-    files.currentDir = directory;
-}
+// function readDir(directory)
+// {
+//     icons = [];
+//     files = listDir(directory);
+//     files.currentDir = directory;
+// }
 
 function loadTools()
 {
@@ -82,32 +82,32 @@ function openScene(scenePath)
     active = false;
 }
 
-function listDir(directory)
-{
-    let files = [];
-    let directories = [];
-    let dirLen = directory.length;
-    for (let i = 0; i < assetPaths.length; i++)
-    {
-        let path = assetPaths[i];
-        if (!path.startsWith(directory)) continue;
+// function listDir(directory)
+// {
+//     let files = [];
+//     let directories = [];
+//     let dirLen = directory.length;
+//     for (let i = 0; i < assetPaths.length; i++)
+//     {
+//         let path = assetPaths[i];
+//         if (!path.startsWith(directory)) continue;
 
-        let slashIndex = path.indexOf("\\", dirLen+1);
-        if (slashIndex != -1) { // its a subdirectory
-            let pathDir = path.substring(0, path.indexOf("\\", dirLen+1)+1);
+//         let slashIndex = path.indexOf("\\", dirLen+1);
+//         if (slashIndex != -1) { // its a subdirectory
+//             let pathDir = path.substring(0, path.indexOf("\\", dirLen+1)+1);
             
-            if (pathDir == "\\.git") continue;
+//             if (pathDir == "\\.git") continue;
     
-            if (directories.indexOf(pathDir) == -1 && pathDir != "") {
-                directories.push(pathDir);
-            }
-        } else {
-            if (path == "\\.gitattributes") continue;
-            files.push(path);
-        }
-    }
-    return {files: files, directories: directories};
-}
+//             if (directories.indexOf(pathDir) == -1 && pathDir != "") {
+//                 directories.push(pathDir);
+//             }
+//         } else {
+//             if (path == "\\.gitattributes") continue;
+//             files.push(path);
+//         }
+//     }
+//     return {files: files, directories: directories};
+// }
 
 function readObject(target, backTarget = null, ignoreFunctions = false)
 {
@@ -174,118 +174,118 @@ function readObject(target, backTarget = null, ignoreFunctions = false)
 
 
 
-function filePreview(x, y, width, height)
-{
+// function filePreview(x, y, width, height)
+// {
     
-    let type = getFileType(filepreview);
-    gui.x = x;
-    gui.y = y;
-    gui.textColor = Color.seablue;
-    gui.button("[ close ]", function() { filepreview = "" });
-    gui.textColor = Color.disaster;
-    gui.label(filepreview);
-    y = gui.y;
-    if (type == 3) {
-        Draw.texture(filepreview, x, y);
-    }
+//     let type = getFileType(filepreview);
+//     gui.x = x;
+//     gui.y = y;
+//     gui.textColor = Color.seablue;
+//     gui.button("[ close ]", function() { filepreview = "" });
+//     gui.textColor = Color.disaster;
+//     gui.label(filepreview);
+//     y = gui.y;
+//     if (type == 3) {
+//         Draw.texture(filepreview, x, y);
+//     }
 
-    if (type == 5) {
-        gui.textColor = Color.gray;
-        gui.button("play", function() { Audio.playSound(filepreview); });
-        gui.button("stop", function() { Audio.stopAllSound(); });
-    }
+//     if (type == 5) {
+//         gui.textColor = Color.gray;
+//         gui.button("play", function() { Audio.playSound(filepreview); });
+//         gui.button("stop", function() { Audio.stopAllSound(); });
+//     }
 
-    if (type == 2 || type == 8 || type == 7) {
-        Draw.rect(x, y, width, height, Color.black, true);
-        let lines = Assets.readText(filepreview).split("\n");
-        let maxLines = Math.min(height / Draw.fontHeight, lines.length);
-        let maxWidth = width / Draw.fontWidth;
-        gui.textColor = Color.gray;
-        for (let i = 0; i < maxLines; i++)
-        {
-            gui.label(lines[i].substring(0, maxWidth));
-        }
-    }
-}
+//     if (type == 2 || type == 8 || type == 7) {
+//         Draw.rect(x, y, width, height, Color.black, true);
+//         let lines = Assets.readText(filepreview).split("\n");
+//         let maxLines = Math.min(height / Draw.fontHeight, lines.length);
+//         let maxWidth = width / Draw.fontWidth;
+//         gui.textColor = Color.gray;
+//         for (let i = 0; i < maxLines; i++)
+//         {
+//             gui.label(lines[i].substring(0, maxWidth));
+//         }
+//     }
+// }
 
-let filebreak = false;
-function fileList(x, y)
-{
-    gui.x = x;
-    gui.y = y;
+// let filebreak = false;
+// function fileList(x, y)
+// {
+//     gui.x = x;
+//     gui.y = y;
 
-    if (files == null) return;
-    gui.textColor = Color.seablue;
-    gui.button("[back]", function() {
-        if (files.currentDir == "") {
-            files = null;
-            rootIcons();
-        } else {
-            let newDir = files.currentDir.substring(0, files.currentDir.lastIndexOf('\\', files.currentDir.length -2));
-            files = null;
-            readDir(newDir);
-        }
-    });
-    if (files == null) return;
-    gui.label(files.currentDir);
-    gui.x += 17;
-    y += 16;
+//     if (files == null) return;
+//     gui.textColor = Color.seablue;
+//     gui.button("[back]", function() {
+//         if (files.currentDir == "") {
+//             files = null;
+//             rootIcons();
+//         } else {
+//             let newDir = files.currentDir.substring(0, files.currentDir.lastIndexOf('\\', files.currentDir.length -2));
+//             files = null;
+//             readDir(newDir);
+//         }
+//     });
+//     if (files == null) return;
+//     gui.label(files.currentDir);
+//     gui.x += 17;
+//     y += 16;
 
     
 
-    filebreak = false;
+//     filebreak = false;
 
-    iconRect.y = 45;
-    gui.textColor = Color.gray;
-    for (let i = 0; i < files.directories.length; i++)
-    {
-        Draw.texture("tools/sprites/consoleicons.png", x, y+2, iconRect);
-        gui.x = x + 19;
-        gui.y = y;
-        gui.button(files.directories[i], function(){readDir(files.directories[i]); filebreak = true});
-        y += 8;
-        if (filebreak) return;
-    }
+//     iconRect.y = 45;
+//     gui.textColor = Color.gray;
+//     for (let i = 0; i < files.directories.length; i++)
+//     {
+//         Draw.texture("tools/sprites/consoleicons.png", x, y+2, iconRect);
+//         gui.x = x + 19;
+//         gui.y = y;
+//         gui.button(files.directories[i], function(){readDir(files.directories[i]); filebreak = true});
+//         y += 8;
+//         if (filebreak) return;
+//     }
 
-    for (let i = 0; i < files.files.length; i++)
-    {
-        let type = getFileType(files.files[i]);
-        iconRect.y = type * 5;
-        Draw.texture("tools/sprites/consoleicons.png", x, y+2, iconRect);
-        gui.x = x + 19;
-        gui.y = y;
-        gui.button(files.files[i], function() { filepreview = files.files[i]; filebreak = true;});
-        y += 8;
-        if (filebreak) return;
-    }
-    gui.textColor = Color.disaster;
-}
+//     for (let i = 0; i < files.files.length; i++)
+//     {
+//         let type = getFileType(files.files[i]);
+//         iconRect.y = type * 5;
+//         Draw.texture("tools/sprites/consoleicons.png", x, y+2, iconRect);
+//         gui.x = x + 19;
+//         gui.y = y;
+//         gui.button(files.files[i], function() { filepreview = files.files[i]; filebreak = true;});
+//         y += 8;
+//         if (filebreak) return;
+//     }
+//     gui.textColor = Color.disaster;
+// }
 
-function getFileType(path)
-{
-    if (path.indexOf('.') == -1) return 9;
-    let ext = path.substring(path.lastIndexOf('.'));
-    switch (ext) {
-        case ".js":
-            return 2;
-        case ".png":
-            return 3;
-        case ".glb":
-        case ".gltf":
-        case ".obj":
-            return 4;
-        case ".wav":
-        case ".ogg":
-        case ".mp3":
-            return 5;
-        case ".frag":
-        case ".vert":
-            return 7;
-        case ".txt":
-        case ".json":
-            return 8;
-    }
-}
+// function getFileType(path)
+// {
+//     if (path.indexOf('.') == -1) return 9;
+//     let ext = path.substring(path.lastIndexOf('.'));
+//     switch (ext) {
+//         case ".js":
+//             return 2;
+//         case ".png":
+//             return 3;
+//         case ".glb":
+//         case ".gltf":
+//         case ".obj":
+//             return 4;
+//         case ".wav":
+//         case ".ogg":
+//         case ".mp3":
+//             return 5;
+//         case ".frag":
+//         case ".vert":
+//             return 7;
+//         case ".txt":
+//         case ".json":
+//             return 8;
+//     }
+// }
 
 function sidebar(x, y, width, height)
 {

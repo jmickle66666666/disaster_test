@@ -4,7 +4,7 @@ var console = load("tools/console.js");
 
 function init() {
     Engine.setResolution(320,240,2);
-    Engine.setTargetFPS(60);
+    Engine.setTargetFPS(30);
     Draw.loadFont("lib/fontsmall.png");
     Draw.setFOV(90);
     Engine.setMouseVisible(true);
@@ -12,7 +12,7 @@ function init() {
     console.init();
 
     // load a default scene here!
-    scenes.openScene(load("voxthing.js"));
+    scenes.openScene(load("tools/filebrowser.js"));
 
     initialised = true;
 }
