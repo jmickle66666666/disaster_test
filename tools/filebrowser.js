@@ -7,9 +7,23 @@ var quadSize = 0.6;
 var bandPos = {x:1, y:-.2, z:-3};
 var file = load("lib/file.js");
 var gui = load("lib/gui.js");
+var scenes = load("lib/scenes.js");
 var currentDir = "";
 var padding = 2;
 var selectedFile = "";
+
+var selectCallback;
+var cancelCallback;
+var fileFilter = ".png";
+
+function browse(filter, startDir, onSelect, onCancel)
+{
+    selectCallback = onSelect;
+    cancelCallback = onCancel;
+    currentDir = startDir;
+    fileFilter = filter;
+    scenes.openScene(load("tools/filebrowser.js"));
+}
 
 function init()
 {
@@ -72,7 +86,7 @@ function init()
         });
     }
 
-    fileList = file.listDir(currentDir);
+    fileList = file.listDir(currentDir, fileFilter);
 }
 
 var t = 0;
@@ -92,55 +106,6 @@ function update(dt)
         x: t * 31, y: t * 20, z: 100+t * 48
     }, "shaders/stripes");
 
-    // if (activeTimer < 1) activeTimer += dt * 8;
-    // if (activeTimer > 1) activeTimer = 1;
-    // if (Input.getKeyDown(Key.up)) {
-    //     currentIndex -= 1;
-    //     if (currentIndex < 0) currentIndex = 0;
-    //     activeTimer = 0;
-    // }
-    // if (Input.getKeyDown(Key.down)) {
-    //     currentIndex += 1;
-    //     if (currentIndex >= fileList.files.length + fileList.directories.length) currentIndex = (fileList.files.length + fileList.directories.length)-1;
-    //     activeTimer = 0;
-    // }
-
-    // if (currentDir != "")
-    // {
-    //     fileButton(2 + 14 * i, "[up]", currentIndex == 0, function() {
-    //         var upDir = Math.max(currentDir.lastIndexOf("\\"), currentDir.lastIndexOf("/"));
-    //         if (upDir == -1) {
-    //             currentDir = "";
-    //         } else {
-    //             currentDir = currentDir.substring(0, upDir-1);
-    //         }
-    //         fileList = file.listDir(currentDir);
-    //     });
-    // }
-
-    // for (var i = 0; i < fileList.directories.length; i++)
-    // {
-    //     var active = currentIndex == i;
-    //     if (currentDir != "") active = currentIndex == i + 1;
-    //     fileButton(18 + 14 * i, fileList.directories[i], active, function() {
-    //         fileList = file.listDir(fileList.directories[currentIndex]);
-    //         currentIndex = 0;
-    //     });
-    // }
-    // for (var i = 0; i < fileList.files.length; i++)
-    // {
-        
-    //     var active = currentIndex == i + fileList.directories.length;
-    //     if (currentDir != "") active = currentIndex == i + fileList.directories.length + 1;
-    //     fileButton(18 + 14 * (i + fileList.directories.length), fileList.files[i], active, function() {
-    //         log(fileList[files[i]]);
-    //     });
-    // }
-
-    // if (Input.getKeyDown(Key.return) && currentIndex < fileList.directories.length) {
-        
-    // }
-
     var x = padding;
     var y = padding;
 
@@ -158,30 +123,50 @@ function update(dt)
     previewArea(x, y, Draw.screenWidth - x - padding, Draw.screenHeight - y - padding);
 }
 
+var fileListScroll = 0;
 function fileListArea(x, y, width, height)
 {
     Draw.rect(x, y, width, height, Color.darkgray, true);
     Draw.nineSlice("button2.png", buttonSliceRect2, x, y, width, height);
 
+    var totalViewCount = Math.floor((height-12) / 12);
+    var tempDir = currentDir;
+
     var ty = y + 6;
-    for (var i = 0; i < fileList.directories.length; i++)
+    var dirViewCount = Math.min(totalViewCount + fileListScroll, fileList.directories.length);
+    for (var i = fileListScroll; i < dirViewCount; i++)
     {
-        fileListButton(x+6, ty, width - 4, 12, fileList.directories[i], true);
+        if (i < 0) continue;
+        fileListButton(x+6, ty, width - 12, 12, fileList.directories[i], true);
+        ty += 12;
+
+        // if we selected a new folder, return
+        if (currentDir != tempDir) return;
+    }
+
+    var fileViewCount = Math.min(totalViewCount - dirViewCount + fileListScroll, fileList.files.length);
+    for (var i = 0; i < fileViewCount; i++)
+    {
+        fileListButton(x+6, ty, width - 12, 12, fileList.files[i], false);
         ty += 12;
     }
 
-    for (var i = 0; i < fileList.files.length; i++)
-    {
-        fileListButton(x+6, ty, width - 4, 12, fileList.files[i], false);
-        ty += 12;
+    if (Input.mouseWheel < 0) fileListScroll += 1;
+    if (Input.mouseWheel > 0) fileListScroll -= 1;
+    if (fileListScroll < 0) fileListScroll = 0;
+    if (fileListScroll > (fileList.files.length + fileList.directories.length) - totalViewCount) {
+        fileListScroll = (fileList.files.length + fileList.directories.length) - totalViewCount;
     }
 }
 
 function fileListButton(x, y, width, height, path, isDirectory)
 {
+    let charLength = Math.floor(width / Draw.fontWidth);
+
     if (path == selectedFile) {
         Draw.rect(x, y, width, height, Color.disaster);
     }
+
     if (mouseHover(x, y, width, height)) {
         Draw.rect(x, y, width, height, Color.white);
 
@@ -193,8 +178,9 @@ function fileListButton(x, y, width, height, path, isDirectory)
             }
         }
     }
+
     Draw.text(
-        file.stripToLocalPath(path), 
+        file.stripToLocalPath(path).substring(0, charLength), 
         x+2, y+2, 
         path==selectedFile?Color.white:Color.gray
     );
@@ -230,40 +216,30 @@ var buttonSliceRect2 = {x: 5, y: 5, w: 6, h: 6};
 
 function okCancelButtonArea(x, y, width, height)
 {
-    //Draw.rect(x, y, width, height, Color.darkgray, true);
-    // Draw.text("ok cancel", x, y, Color.white);
-
     var w = (width-padding)/2;
     Draw.nineSlice("button2.png", buttonSliceRect2, x, y, w, height);
     Draw.nineSlice("button2.png", buttonSliceRect2, x + w + padding, y, w, height);
 
-    
+    if (mouseHover(x, y, w, height)) {
+        Draw.rect(x, y, w, height, Color.white);
+        if (Input.mouseLeftDown && selectedFile != "") {
+            if (selectCallback != null) selectCallback(selectedFile);
+            scenes.closeScene();
+        }
+    }
     Draw.text("ok", x + 19, y + height/2 - Draw.fontHeight/2, Color.gray);
+
+    if (mouseHover(x + w + padding, y, w, height)) {
+        Draw.rect(x + w + padding, y, w, height, Color.white);
+        if (Input.mouseLeftDown) {
+            if (cancelCallback != null) cancelCallback();
+            scenes.closeScene();
+        }
+    }
     Draw.text("cancel", x + w+12, y + height/2 - Draw.fontHeight/2, Color.gray);
 }
 
 var fileList = {};
-
-// var currentIndex = 0;
-
-// var activeTimer = 0;
-// var b = {r:0, g:0, b:0, a:100};
-// function fileButton(y, text, active, action)
-// {
-//     var width = 80;
-//     Draw.rect(0, y, 100, 11, b, true);
-//     Draw.text(text, 10, y + 2, active?Color.white:Color.black);
-//     if (active) {
-//         var x = 10 + (width/2) * (1 - activeTimer);
-//         Draw.line(x, y, x + width/2 * (activeTimer*2), y, Color.white);
-//         Draw.line(x, y+10, x + width/2 * (activeTimer*2), y+10, Color.white);
-//         //Draw.rect(10 + (width/2) * (1 - activeTimer), y, width/2 * (activeTimer*2), 11, Color.white);
-//     }
-
-//     if (active && Input.getKeyDown(Key.return)) {
-//         action();
-//     }
-// }
 
 function previewArea(x, y, width, height)
 {
@@ -277,12 +253,7 @@ function previewArea(x, y, width, height)
             Draw.rect(x, y, width, height, Color.darkgray, true);
         }
     }
-    // Draw.line(x, y, x + 50, y, Color.white);
-    // Draw.line(x, y, x, y + 10, Color.white);
-    // Draw.line(x + width - 50, y + height, x + width, y + height, Color.white);
-    // Draw.line(x + width, y + height, x + width, y + height - 10, Color.white);
     Draw.nineSlice("button2nobg.png", buttonSliceRect2, x, y, width, height);
-
 
     if (selectedFile == "") return;
 
@@ -291,6 +262,14 @@ function previewArea(x, y, width, height)
         case ".png":
             Draw.texture(selectedFile, x+4, y+4);
             break;
+        case ".voxel":
+        case ".json":
+        case ".tilemap":
+            // let data = JSON.parse(Assets.readText(selectedFile));
+            // gui.x = x + 4;
+            // gui.y = y + 4;
+            // gui.objectPreview(selectedFile, data);
+            // break;
         case ".txt":
         case ".js":
             let lines = Assets.readText(selectedFile).split("\n");
@@ -306,13 +285,6 @@ function previewArea(x, y, width, height)
         case ".glb":
         case ".obj":
             Draw.model(selectedFile, {x: 0, y:0, z:-1}, {x:0, y:0, z:0});
-            break;
-        case ".voxel":
-        case ".json":
-            let data = JSON.parse(Assets.readText(selectedFile));
-            gui.x = x + 4;
-            gui.y = y + 4;
-            gui.objectPreview(selectedFile, data);
             break;
         default:
             Draw.text("can't preview "+extension+" files sorry :(", x + 4, y + 4, Color.gray);
@@ -344,6 +316,7 @@ function mouseHover(x, y, width, height)
 function openDirectory(path)
 {
     currentDir = path;
-    fileList = file.listDir(currentDir);
+    fileList = file.listDir(currentDir, fileFilter);
     selectedFile = "";
+    fileListScroll = 0;
 }

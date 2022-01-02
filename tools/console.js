@@ -1,8 +1,10 @@
 let gui = load("lib/gui.js");
 let scenes = load("lib/scenes.js");
+let filebrowser = load("tools/filebrowser.js");
 var iconRect = {x:0, y:0, w:17, h:5};
 
 var active = false;
+var setInactiveLater = false;
 var toggleKey = Key.f5;
 
 let icons = [];
@@ -25,6 +27,7 @@ function update(dt)
     // this is a hack to make sure gui calls work correctly.
     // to make sure the gui of the open scene doesn't work while the console is open, gui checks 
     // to see if the console is active. to then use gui in the console itself, we pretend its not active
+    // this is also why setInactiveLater exists
     active = false; 
 
     deltatime = dt;
@@ -39,18 +42,33 @@ function update(dt)
     drawIcons(0, 0, Draw.screenWidth - sidebarwidth, Draw.screenHeight);
 
     active = true;
+    if (setInactiveLater) {
+        active = false;
+        setInactiveLater = false;
+    }
 }
 
 function rootIcons()
 {
     genIcons([
         {id:1, text:"main.js", onClick:function() {readObject(rootObject, null, true)}},
-        //{id:0, text:"assets", onClick:function() { readDir(""); }},
+        {id:0, text:"assets", onClick:function() { openFileBrowser(); }},
         {id:0, text:"tools", onClick:function() { loadTools();}},
         {id:2, text:"close scene", onClick:function() {scenes.closeScene();}},
         {id:2, text:"reset", onClick:function() {Engine.reset();}},
         {id:2, text:"quit", onClick:function() {Engine.quit();}},
     ], false);
+}
+
+function openFileBrowser()
+{
+filebrowser.browse(
+    "",  // file filter, checks if file ends with this, e.g ".png"
+    "",  // starting folder, "" for root
+    function(path) {log(path);},  // callback when file is selected
+    function() {log("cancelled");} // callback when cancel button is pressed
+);
+    setInactiveLater = true;
 }
 
 // function readDir(directory)
@@ -66,7 +84,7 @@ function loadTools()
         {id:0, text:"cellular generator", onClick:function() {openScene("tools/cellulargenerator.js")}},
         //{id:0, text:"matrix system", onClick:function() {openScene("tools/matrixsystem.js")}},
         //{id:0, text:"sprite editor", onClick:function() {openScene("tools/spriteeditor.js")}},
-        //{id:0, text:"tilemap editor", onClick:function() {openScene("tools/tilemapeditor.js")}}, // this is broken
+        {id:0, text:"tilemap editor", onClick:function() {openScene("tools/tilemapeditor.js")}}, // this is broken
         //{id:0, text:"zone editor", onClick:function() {openScene("tools/zoneeditor.js")}},
         {id:0, text:"back", onClick:function() { rootIcons(); }},
     ])
@@ -75,7 +93,7 @@ function loadTools()
 function openScene(scenePath)
 {
     scenes.openScene(load(scenePath));
-    active = false;
+    setInactiveLater = true;
 }
 
 // function listDir(directory)

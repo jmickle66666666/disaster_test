@@ -1,6 +1,7 @@
 var tilemap = load("lib/tilemap.js");
 var gui = load("lib/gui.js");
 var scenes = load("lib/scenes.js");
+var filebrowser = load("tools/filebrowser.js");
 
 var state = "edit";
 var currentTilemap;
@@ -23,7 +24,7 @@ var scriptList = [];
 var mapList = [];
 var tool = "paint";
 var tooltip = "";
-var autosavePath = "autosave.json";
+var autosavePath = "autosave.tilemap";
 var addTextProp = false;
 var addNumberProp = false;
 var newName = "prop";
@@ -58,24 +59,24 @@ var iconRects = {
 function init()
 {
     state = "entityEditor";
-    var paths = Assets.list().split(',');
-    textures = [];
-    scriptList = [];
-    mapList = [];
-    for (var i = 0; i < paths.length; i++)
-    {
-        if (paths[i].endsWith(".png")) {
-            textures.push(paths[i]);
-        }
+    //var paths = Assets.list().split(',');
+    // textures = [];
+    // scriptList = [];
+    // mapList = [];
+    // for (var i = 0; i < paths.length; i++)
+    // {
+    //     if (paths[i].endsWith(".png")) {
+    //         textures.push(paths[i]);
+    //     }
 
-        if (paths[i].endsWith(".js")) {
-            scriptList.push(paths[i]);
-        }
+    //     if (paths[i].endsWith(".js")) {
+    //         scriptList.push(paths[i]);
+    //     }
 
-        if (paths[i].endsWith(".json")) {
-            mapList.push(paths[i]);
-        }
-    }
+    //     if (paths[i].endsWith(".json")) {
+    //         mapList.push(paths[i]);
+    //     }
+    // }
 
     if (Assets.exists(autosavePath)) {
         currentTilemap = tilemap.load(autosavePath);
@@ -258,8 +259,16 @@ function update(dt)
                 gui.y = 8;
                 gui.x = 8;
                 ent.name = gui.textField("name", ent.name);
-                gui.comboBox("script", ent.script, scriptList, function(newScript) { ent.script = newScript; });
-                gui.comboBox("preview", ent.preview, textures, function(newTexture) { ent.preview = newTexture; });
+                if (gui.button("script: "+ent.script, function() {
+                    filebrowser.browse(".js", "", 
+                        function(path) {ent.script = path}
+                    );
+                }));
+                if (gui.button("preview:"+ent.preview, function() {
+                    filebrowser.browse(".png", "", 
+                        function(path) {ent.preview = path}
+                    );
+                }));
                 ent.properties = gui.objectEditor("properties", ent.properties);
                 
                 if (addTextProp) {
@@ -324,27 +333,31 @@ function update(dt)
             }
         break;
     
-        case "picktexture":
-            gui.label("pick a texture");
-            for (var i = 0; i < textures.length; i++)
-            {
-                if (currentTilemap.properties.texture == textures[i]) {
-                    gui.button("-"+textures[i]+"-", function() { state = "properties"; });
-                } else {
-                    gui.button(" "+textures[i], function() { state = "properties"; currentTilemap.properties.texture = textures[i]; });
-                }
+        // case "picktexture":
+        //     gui.label("pick a texture");
+        //     for (var i = 0; i < textures.length; i++)
+        //     {
+        //         if (currentTilemap.properties.texture == textures[i]) {
+        //             gui.button("-"+textures[i]+"-", function() { state = "properties"; });
+        //         } else {
+        //             gui.button(" "+textures[i], function() { state = "properties"; currentTilemap.properties.texture = textures[i]; });
+        //         }
         
-                if (gui.lastHovered) {
-                    var previewSize = Assets.getTextureSize(textures[i]);
-                    Draw.texture(textures[i], 319 - previewSize.w, 0);
-                }
-            }
-            break;
+        //         if (gui.lastHovered) {
+        //             var previewSize = Assets.getTextureSize(textures[i]);
+        //             Draw.texture(textures[i], 319 - previewSize.w, 0);
+        //         }
+        //     }
+        //     break;
 
         case "properties":
             gui.label("properties:");
             currentTilemap.properties.name = gui.textField("name:", currentTilemap.properties.name);
-            gui.button("texture: " + currentTilemap.properties.texture, function() { state = "picktexture"; });
+            gui.button("texture: " + currentTilemap.properties.texture, function() { 
+                filebrowser.browse(".png", "", 
+                    function (path) { currentTilemap.properties.texture = path; }
+                );
+            });
             currentTilemap.properties.tileWidth = gui.numberField("tile width", currentTilemap.properties.tileWidth);
             currentTilemap.properties.tileHeight = gui.numberField("tile height", currentTilemap.properties.tileHeight);
         
@@ -547,7 +560,7 @@ function update(dt)
         var y = Input.mouseY - 8;
         Draw.rect(x, y, 4 + tooltip.length * Draw.fontWidth, 4 + Draw.fontHeight, Color.black, true);
         Draw.rect(x, y, 4 + tooltip.length * Draw.fontWidth, 4 + Draw.fontHeight, Color.disaster, false);
-        Draw.text(x + 2, y + 2, tooltip, Color.white);
+        Draw.text(tooltip, x + 2, y + 2, Color.white);
     }
 
     if (Input.getKeyDown(Key.z)) {

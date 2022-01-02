@@ -12,7 +12,8 @@ function randomResolution()
 
 function init() {
     Engine.setResolution(320,240,2);
-    Engine.setTargetFPS(30);
+    // randomResolution();
+    Engine.setTargetFPS(60);
     Draw.loadFont("lib/fontsmall.png");
     Draw.setFOV(90);
     Engine.setMouseVisible(true);
@@ -20,13 +21,12 @@ function init() {
     console.init();
 
     // load a default scene here!
-    scenes.openScene(load("tools/filebrowser.js"));
+    //scenes.openScene(load("tools/filebrowser.js"));
 
     initialised = true;
 }
 
 let initialised = false;
-//fdsjg
 
 function update(dt)
 {
