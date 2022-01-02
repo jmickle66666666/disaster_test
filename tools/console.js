@@ -9,15 +9,11 @@ let icons = [];
 let clickedIcon = -1;
 let rootObject = this;
 let deltatime = 0;
-//let assetPaths = "";
-// let files = null;
-// let filepreview = "";
 let iconBackground = {r:0, g:0, b:0, a:180};
 let sidebarwidth = 80;
 
 function init()
 {
-    //assetPaths = Assets.list().split(',');
     rootIcons();
 }
 

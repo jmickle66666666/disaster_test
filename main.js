@@ -2,6 +2,14 @@ var gui = load("lib/gui.js");
 var scenes = load("lib/scenes.js");
 var console = load("tools/console.js");
 
+function randomResolution()
+{
+    // useful for testing
+    var x = Math.floor(320 + Math.random() * 320);
+    var y = Math.floor(240 + Math.random() * 240);
+    Engine.setResolution(x, y, 2);
+}
+
 function init() {
     Engine.setResolution(320,240,2);
     Engine.setTargetFPS(30);
@@ -39,7 +47,7 @@ function update(dt)
     }
 
     if (Input.getKeyDown(Key.f7)) {
-        Engine.slowDrawFrame(2);
+        Engine.slowDrawFrame(64);
     }
 
     if (Input.getKeyDown(Key.f8)) {
