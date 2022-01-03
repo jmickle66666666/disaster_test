@@ -16,12 +16,31 @@ var selectCallback;
 var cancelCallback;
 var fileFilter = ".png";
 
+var saving = false;
+var saveFileName = "";
+
 function browse(filter, startDir, onSelect, onCancel)
 {
+    selectedFile = "";
     selectCallback = onSelect;
     cancelCallback = onCancel;
     currentDir = startDir;
     fileFilter = filter;
+    saving = false;
+    Engine.setMouseVisible(true);
+    scenes.openScene(load("tools/filebrowser.js"));
+}
+
+function save(defaultFilename, startDir, onSave, onCancel)
+{
+    selectedFile = "";
+    selectCallback = onSave;
+    cancelCallback = onCancel;
+    saveFileName = defaultFilename;
+    currentDir = startDir;
+    fileFilter = "";
+    saving = true;
+    Engine.setMouseVisible(true);
     scenes.openScene(load("tools/filebrowser.js"));
 }
 
@@ -120,7 +139,22 @@ function update(dt)
     okCancelButtonArea(x, Draw.screenHeight - 20 - padding, 100, 20);
     x += padding + 100;
 
-    previewArea(x, y, Draw.screenWidth - x - padding, Draw.screenHeight - y - padding);
+    if (saving) {
+        saveNameArea(x, y, Draw.screenWidth - x - padding, 20);
+        y += padding + 20;
+        previewArea(x, y, Draw.screenWidth - x - padding, (Draw.screenHeight - y - padding));
+    } else {
+        previewArea(x, y, Draw.screenWidth - x - padding, Draw.screenHeight - y - padding);
+    }
+}
+
+function saveNameArea(x, y, width, height)
+{
+    Draw.nineSlice("button2.png", buttonSliceRect2, x, y, width, height);
+
+    gui.x = x + 8;
+    gui.y = y + 6;
+    saveFileName = gui.textField("Name:", saveFileName);
 }
 
 var fileListScroll = 0;
@@ -175,6 +209,9 @@ function fileListButton(x, y, width, height, path, isDirectory)
                 openDirectory(path);
             } else {
                 selectedFile = path;
+                if (saving) {
+                    saveFileName = file.stripToLocalPath(path);
+                }
             }
         }
     }
@@ -222,8 +259,18 @@ function okCancelButtonArea(x, y, width, height)
 
     if (mouseHover(x, y, w, height)) {
         Draw.rect(x, y, w, height, Color.white);
-        if (Input.mouseLeftDown && selectedFile != "") {
-            if (selectCallback != null) selectCallback(selectedFile);
+        if (Input.mouseLeftDown) {
+            if (selectCallback != null) {
+                if (saving) {
+                    if (currentDir == "") {
+                        selectCallback(saveFileName);    
+                    } else {
+                        selectCallback(currentDir + "/" + saveFileName);
+                    }
+                } else {
+                    if (selectedFile != "") selectCallback(selectedFile);
+                }
+            }
             scenes.closeScene();
         }
     }

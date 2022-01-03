@@ -52,7 +52,7 @@ function rootIcons()
 {
     genIcons([
         {id:1, text:"main.js", onClick:function() {readObject(rootObject, null, true)}},
-        {id:0, text:"assets", onClick:function() { openFileBrowser(); }},
+        {id:0, text:"asset browser", onClick:function() { openFileBrowser(); }},
         {id:0, text:"tools", onClick:function() { loadTools();}},
         {id:2, text:"close scene", onClick:function() {scenes.closeScene();}},
         {id:2, text:"reset", onClick:function() {Engine.reset();}},
@@ -62,21 +62,14 @@ function rootIcons()
 
 function openFileBrowser()
 {
-filebrowser.browse(
-    "",  // file filter, checks if file ends with this, e.g ".png"
-    "",  // starting folder, "" for root
-    function(path) {log(path);},  // callback when file is selected
-    function() {log("cancelled");} // callback when cancel button is pressed
-);
+    filebrowser.browse(
+        "",  // file filter, checks if file ends with this, e.g ".png"
+        "",  // starting folder, "" for root
+        function(path) {log(path);},  // callback when file is selected
+        function() {log("cancelled");} // callback when cancel button is pressed
+    );
     setInactiveLater = true;
 }
-
-// function readDir(directory)
-// {
-//     icons = [];
-//     files = listDir(directory);
-//     files.currentDir = directory;
-// }
 
 function loadTools()
 {

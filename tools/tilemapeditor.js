@@ -109,6 +109,7 @@ function updateMaplist()
 
 function update(dt)
 {
+    Engine.setMouseVisible(false);
     tooltip = "";
     var numTilesX = Math.floor(Assets.getTextureSize(currentTilemap.properties.texture).w / currentTilemap.properties.tileWidth);
     var numTilesY = Math.floor(Assets.getTextureSize(currentTilemap.properties.texture).h / currentTilemap.properties.tileHeight);
@@ -682,7 +683,17 @@ function toolbar()
                 if (index == 2) { state = "edit"; tool = "fill"; }
                 // if (index == 3) { state = "edit"; tool = "entity"; }
                 if (index == 3) { state = "entityEditor"; }
-                if (index == 4) { state = "saveConfirm"; }
+                if (index == 4) { filebrowser.save(
+                    currentTilemap.properties.name+".tilemap",
+                    "",
+                    function(savepath) { 
+                        log("saving to: "+savepath);
+                        Assets.unload(savepath); 
+                        Assets.unload(autosavePath); 
+                        currentTilemap.save(savepath); 
+                        currentTilemap.save(autosavePath); 
+                    }
+                ); }
                 if (index == 5) { state = "loadMap"; updateMaplist(); }
                 if (index == 6) { 
                     currentTilemap.save(autosavePath);
