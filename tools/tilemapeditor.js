@@ -95,18 +95,6 @@ function close()
     Engine.setMouseVisible(true);
 }
 
-function updateMaplist()
-{
-    var paths = Assets.list().split(',');
-    mapList = [];
-    for (var i = 0; i < paths.length; i++)
-    {
-        if (paths[i].endsWith(".json")) {
-            mapList.push(paths[i]);
-        }
-    }
-}
-
 function update(dt)
 {
     Engine.setMouseVisible(false);
@@ -333,23 +321,6 @@ function update(dt)
                 );
             }
         break;
-    
-        // case "picktexture":
-        //     gui.label("pick a texture");
-        //     for (var i = 0; i < textures.length; i++)
-        //     {
-        //         if (currentTilemap.properties.texture == textures[i]) {
-        //             gui.button("-"+textures[i]+"-", function() { state = "properties"; });
-        //         } else {
-        //             gui.button(" "+textures[i], function() { state = "properties"; currentTilemap.properties.texture = textures[i]; });
-        //         }
-        
-        //         if (gui.lastHovered) {
-        //             var previewSize = Assets.getTextureSize(textures[i]);
-        //             Draw.texture(textures[i], 319 - previewSize.w, 0);
-        //         }
-        //     }
-        //     break;
 
         case "properties":
             gui.label("properties:");
@@ -442,22 +413,6 @@ function update(dt)
             }
         break;
 
-        case "loadMap":
-            drawCanvas();
-        
-            gui.x = 10;
-            gui.y = 10;
-            for (var i = 0; i < mapList.length; i++)
-            {
-                gui.button(mapList[i], function() { 
-                    currentTilemap = tilemap.load(mapList[i]);
-                    state = "edit";
-                    return;
-                });
-            }
-            showPointer = true;
-        break;
-
         case "edit":
             drawCanvas();
 
@@ -539,17 +494,6 @@ function update(dt)
             if (Input.getKeyDown(Key.tab)) {
                 state = "palette";
             }
-        break;
-
-        case "saveConfirm":
-            drawCanvas();
-            gui.x = 80;
-            gui.y = 60;
-            var path = "maps/"+currentTilemap.properties.name+".json";
-            gui.label("save as "+path+"?");
-            gui.button("yes", function() { Assets.unload(path); Assets.unload(autosavePath); currentTilemap.save(path); currentTilemap.save(autosavePath); state="entityEditor"; });
-            gui.button("no", function() { state="entityEditor"; return; });
-            showPointer = true;
         break;
     }
 
@@ -694,7 +638,17 @@ function toolbar()
                         currentTilemap.save(autosavePath); 
                     }
                 ); }
-                if (index == 5) { state = "loadMap"; updateMaplist(); }
+                if (index == 5) { 
+                    filebrowser.browse(
+                        ".tilemap",
+                        "",
+                        function(loadpath) {
+                            currentTilemap = tilemap.load(loadpath);
+                            state = "edit";
+                            return;
+                        }
+                    );
+                }
                 if (index == 6) { 
                     currentTilemap.save(autosavePath);
                     Assets.unload(autosavePath);
