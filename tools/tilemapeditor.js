@@ -12,13 +12,13 @@ var showPointer = true;
 var dragStart;
 var dragSide;
 var textures;
-var hoverEntity = -1;
-var currentEntity = -1;
-var entityRClickMenuOpen = false;
-var entityRClickPos = {x:0, y:0};
-var entityDrag = -1;
-var entityDragStart = {x:0, y:0};
-var entityDragOffset = {x:0, y:0};
+var hoverGadget = -1;
+var currentGadget = -1;
+var gadgetRClickMenuOpen = false;
+var gadgetRClickPos = {x:0, y:0};
+var gadgetDrag = -1;
+var gadgetDragStart = {x:0, y:0};
+var gadgetDragOffset = {x:0, y:0};
 var clickTime = 0;
 var scriptList = [];
 var mapList = [];
@@ -28,6 +28,7 @@ var autosavePath = "autosave.tilemap";
 var addTextProp = false;
 var addNumberProp = false;
 var newName = "prop";
+var showHelp = false;
 
 var undoStack = [];
 
@@ -44,7 +45,7 @@ function undo()
 var iconRects = {
     paint : { x:11, y:0, w:8, h:13 },
     fill : { x:0, y:0, w:11, h:9 },
-    entity : { x:0, y:9, w:11, h:11 },
+    gadget : { x:0, y:9, w:11, h:11 },
     settings: { x:11, y:13, w:11, h:8 },
     save: {x:19, y:0, w:11, h:11},
     load: {x:22, y:11, w:10, h:8},
@@ -54,29 +55,12 @@ var iconRects = {
     mouse: {x:0, y:27, w:6, h:6},
     copy: {x:30, y:0, w:10, h:11},
     play: {x:32, y:11, w:9, h:10},
+    help: {x:34, y:21, w:8, h:11}
 };
 
 function init()
 {
-    state = "entityEditor";
-    //var paths = Assets.list().split(',');
-    // textures = [];
-    // scriptList = [];
-    // mapList = [];
-    // for (var i = 0; i < paths.length; i++)
-    // {
-    //     if (paths[i].endsWith(".png")) {
-    //         textures.push(paths[i]);
-    //     }
-
-    //     if (paths[i].endsWith(".js")) {
-    //         scriptList.push(paths[i]);
-    //     }
-
-    //     if (paths[i].endsWith(".json")) {
-    //         mapList.push(paths[i]);
-    //     }
-    // }
+    state = "gadgetEditor";
 
     if (Assets.exists(autosavePath)) {
         currentTilemap = tilemap.load(autosavePath);
@@ -99,403 +83,30 @@ function update(dt)
 {
     Engine.setMouseVisible(false);
     tooltip = "";
-    var numTilesX = Math.floor(Assets.getTextureSize(currentTilemap.properties.texture).w / currentTilemap.properties.tileWidth);
-    var numTilesY = Math.floor(Assets.getTextureSize(currentTilemap.properties.texture).h / currentTilemap.properties.tileHeight);
-
-    var tileX = Math.floor(Input.mouseX / currentTilemap.properties.tileWidth);
-    var tileY = Math.floor(Input.mouseY / currentTilemap.properties.tileHeight);
-    var mouseX = tileX * currentTilemap.properties.tileWidth;
-    var mouseY = tileY * currentTilemap.properties.tileHeight;
 
     switch (state) {
-        case "entityEditor":
-            cameraControls(dt);
-        
-            drawCanvas();
-            showPointer = true;
-        
-            hoverEntity = -1;
-            for (var i = 0; i < currentTilemap.entities.length; i++)
-            {
-                var ent = currentTilemap.entities[i];
-                var entSize = {w: 16, h: 16};
-                if (ent.preview != "") {
-                    entSize = Assets.getTextureSize(ent.preview);
-                }
-
-                // check hovers
-                if (Math.abs(Input.mouseX - (ent.x - camera.x)) < entSize.w/2 && Math.abs(Input.mouseY - (ent.y - camera.y)) < entSize.h/2) {
-                    if (hoverEntity == -1) {
-                        hoverEntity = i;
-                    } else {
-                        // do a distance check
-                        var d1 = Math.abs(Input.mouseX - (ent.x - camera.x)) + Math.abs(Input.mouseY - (ent.y - camera.y));
-                        var d2 = Math.abs(Input.mouseX - (currentTilemap.entities[hoverEntity].x - camera.x)) + Math.abs(Input.mouseY - (currentTilemap.entities[hoverEntity].y - camera.y));
-                        if (d1 < d2) hoverEntity = i;
-                    }
-                }
-        
-                // draw them
-                if (ent.preview != "") {
-                    Draw.texture(ent.preview, -camera.x + ent.x - entSize.w/2, -camera.y + ent.y - entSize.h/2);
-                } else {
-                    Draw.texture("tools/sprites/tileicons.png", -camera.x + ent.x - iconRects.entity.w/2, -camera.y + ent.y - iconRects.entity.h/2, iconRects.entity);
-                }
-            }
-        
-            if (entityDrag != -1) {
-        
-                var ent = currentTilemap.entities[entityDrag];
-        
-                if (Input.mouseRightDown) {
-                    ent.x = entityDragStart.x;
-                    ent.y = entityDragStart.y;
-                    entityDrag = -1;
-                }
-        
-                ent.x = Input.mouseX + camera.x - entityDragOffset.x;
-                ent.y = Input.mouseY + camera.y - entityDragOffset.y;
-                
-                if (Input.getKey(Key.leftcontrol)) {
-                    if (ent.preview != "") {
-                        var size = Assets.getTextureSize(ent.preview);
-                        Draw.texture(ent.preview, -camera.x + entityDragStart.x - size.w/2, -camera.y + entityDragStart.y - size.h/2);
-                    } else {
-                        Draw.texture("tools/sprites/tileicons.png", -camera.x + entityDragStart.x - iconRects.entity.w/2, -camera.y + entityDragStart.y - iconRects.entity.h/2, iconRects.entity);
-                    }
-                }
-        
-                if (Input.mouseLeftUp) {
-                    registerUndo();
-                    if (Input.getKey(Key.leftcontrol)) {
-                        currentTilemap.entities.push({
-                            script:ent.script,
-                            preview:ent.preview,
-                            name: ent.name,
-                            x: entityDragStart.x,
-                            y: entityDragStart.y,
-                            properties : JSON.parse(JSON.stringify(ent.properties))
-                        });
-                    }
-        
-                    entityDrag = -1;
-                }
-        
-            } else {
-        
-                if (hoverEntity != -1) {
-        
-                    if (Input.mouseLeftDown) {
-                        registerUndo();
-                        entityDrag = hoverEntity;
-                        entityDragStart.x = currentTilemap.entities[hoverEntity].x;
-                        entityDragStart.y = currentTilemap.entities[hoverEntity].y;
-                        entityDragOffset.x = (Input.mouseX + camera.x) - entityDragStart.x;
-                        entityDragOffset.y = (Input.mouseY + camera.y) - entityDragStart.y;
-        
-                        currentEntity = hoverEntity;
-                    }
-        
-                    if (Input.getKey(Key.leftcontrol)) {
-                        Draw.texture("tools/sprites/tileicons.png", Input.mouseX + 4, Input.mouseY + 4, iconRects.copy);
-                    }
-                }
-        
-            }
-        
-            if (entityRClickMenuOpen) {
-                gui.x = entityRClickPos.x;
-                gui.y = entityRClickPos.y;
-        
-                if (currentEntity == -1) {
-                    gui.button("new entity", function() { 
-                        registerUndo();
-                        currentTilemap.entities.push({
-                            script:"",
-                            preview:"",
-                            name: "entity",
-                            x: Input.mouseX + camera.x,
-                            y: Input.mouseY + camera.y,
-                            properties : {}
-                        });
-                        entityRClickMenuOpen = false;
-                    });
-                } else {
-                    gui.button("delete", function() {
-                        registerUndo();
-                        currentTilemap.entities.splice(currentEntity, 1);
-                        currentEntity = -1;
-                        entityRClickMenuOpen = false;
-                    });
-                    if (currentEntity == -1) return;
-                }
-        
-            }
-        
-            if (Input.mouseRightDown) {
-                entityRClickMenuOpen = true;
-                entityRClickPos.x = Input.mouseX;
-                entityRClickPos.y = Input.mouseY;
-            }
-        
-            if (currentEntity != -1)
-            {
-                var ent = currentTilemap.entities[currentEntity];
-                var entSize = {w: 16, h: 16};
-                if (ent.preview != "") {
-                    entSize = Assets.getTextureSize(ent.preview);
-                }
-                gui.y = 8;
-                gui.x = 8;
-                ent.name = gui.textField("name", ent.name);
-                if (gui.button("script: "+ent.script, function() {
-                    filebrowser.browse(".js", "", 
-                        function(path) {ent.script = path}
-                    );
-                }));
-                if (gui.button("preview:"+ent.preview, function() {
-                    filebrowser.browse(".png", "", 
-                        function(path) {ent.preview = path}
-                    );
-                }));
-                ent.properties = gui.objectEditor("properties", ent.properties);
-                
-                if (addTextProp) {
-                    newName = gui.textField("name:", newName);
-                    gui.button("done", function() { ent.properties[newName] = "text"; addTextProp = false; });
-                    gui.button("cancel", function() { newName = "prop"; addTextProp = false; })
-                } else {
-                    gui.button("add text property", function() { addTextProp = true; newName = "prop"; });
-                }
-        
-                if (addNumberProp) {
-                    newName = gui.textField("name:", newName);
-                    gui.button("done", function() { ent.properties[newName] = 0; addNumberProp = false; });
-                    gui.button("cancel", function() { newName = "prop"; addNumberProp = false; })
-                } else {
-                    gui.button("add number property", function() { addNumberProp = true; newName = "prop"; });
-                }
-        
-                if (ent.preview != "") {
-                    var size = Assets.getTextureSize(ent.preview);
-                    Draw.texture(ent.preview, 320 - size.w, 0);
-                }
-        
-                Draw.rect(
-                    -entSize.w/2 + currentTilemap.entities[currentEntity].x - camera.x,
-                    -entSize.h/2 + currentTilemap.entities[currentEntity].y - camera.y,
-                    entSize.w, entSize.h,
-                    Color.disaster,
-                    false
-                );
-            }
-        
-            if (Input.mouseLeftDown) {
-                entityRClickMenuOpen = false;
-                if (hoverEntity == -1 && !gui.hovered) {
-                    currentEntity = -1;
-                }
-            }
-        
-            if (Input.mouseLeft) {
-                clickTime += dt;
-            }
-        
-            if (Input.mouseLeftUp) {
-                clickTime = 0;
-            }
-        
-            if (hoverEntity != -1)
-            {   
-                var ent = currentTilemap.entities[hoverEntity];
-                var entSize = {w: 16, h: 16};
-                if (ent.preview != "") {
-                    entSize = Assets.getTextureSize(ent.preview);
-                }
-                Draw.rect(
-                    -entSize.w/2 + currentTilemap.entities[hoverEntity].x - camera.x,
-                    -entSize.h/2 + currentTilemap.entities[hoverEntity].y - camera.y,
-                    entSize.w, entSize.h,
-                    Color.white,
-                    false
-                );
-            }
+        case "gadgetEditor":
+            gadgetEditor(dt);
         break;
 
         case "properties":
-            gui.label("properties:");
-            currentTilemap.properties.name = gui.textField("name:", currentTilemap.properties.name);
-            gui.button("texture: " + currentTilemap.properties.texture, function() { 
-                filebrowser.browse(".png", "", 
-                    function (path) { currentTilemap.properties.texture = path; }
-                );
-            });
-            currentTilemap.properties.tileWidth = gui.numberField("tile width", currentTilemap.properties.tileWidth);
-            currentTilemap.properties.tileHeight = gui.numberField("tile height", currentTilemap.properties.tileHeight);
-        
-            Draw.texture(currentTilemap.properties.texture, 0, gui.y);
-            if (currentTilemap.properties.tileWidth > 1 && currentTilemap.properties.tileHeight > 1) {
-                var textureSize = Assets.getTextureSize(currentTilemap.properties.texture);
-                for (var i = 0; i <= textureSize.w; i+= currentTilemap.properties.tileWidth) {
-                    Draw.line(i, gui.y, i, gui.y + textureSize.h, Color.gray);
-                }
-                
-                for (var i = 0; i <= textureSize.h; i+= currentTilemap.properties.tileHeight) {
-                    Draw.line(0, gui.y + i, textureSize.w, gui.y + i, Color.gray);
-                }
-            }
+            propertyEditor();
         break;   
 
         case "palette":
-            drawCanvas();
-            Draw.texture(currentTilemap.properties.texture, 0, 0);
-            Draw.rect(mouseX, mouseY, currentTilemap.properties.tileWidth, currentTilemap.properties.tileHeight, Color.white, false);
-
-            if (Input.mouseLeftDown) {
-                if (tileX < numTilesX && tileY < numTilesY) {
-                    currentTile = tileX + (tileY * numTilesX);
-                    return;
-                }
-            }
-
-            Draw.rect(
-                (currentTile % numTilesX) * currentTilemap.properties.tileWidth, 
-                Math.floor(currentTile / numTilesX) * currentTilemap.properties.tileHeight, 
-                currentTilemap.properties.tileWidth, 
-                currentTilemap.properties.tileHeight, 
-                Color.disaster, 
-                false
-            );
-
-            if (Input.getKeyUp(Key.tab)) {
-                state = "edit";
-            }
+            paletteView();
         break;
 
         case "canvasResize":
-            showPointer = false;
-            drawCanvas();
-
-            var baseRect = {
-                x: 0, y: 0, w: currentTilemap.properties.width, h:currentTilemap.properties.height
-            };
-
-            //cameraControls();
-
-            tileX = Math.floor((Input.mouseX+camera.x) / currentTilemap.properties.tileWidth);
-            tileY = Math.floor((Input.mouseY+camera.y) / currentTilemap.properties.tileHeight);
-
-            var amount = 0;
-
-            if (dragSide == "left") { baseRect.x = tileX + 1; baseRect.w += dragStart - tileX; amount = dragStart - tileX; }
-            if (dragSide == "right") { baseRect.w = tileX; amount = tileX - dragStart; }
-            if (dragSide == "top") { baseRect.y = tileY + 1; baseRect.h += dragStart - tileY; amount = dragStart - tileY; }
-            if (dragSide == "bottom") { baseRect.h = tileY; amount = tileY - dragStart; }
-
-            Draw.rect(
-                -camera.x + baseRect.x * currentTilemap.properties.tileWidth, 
-                -camera.y + baseRect.y * currentTilemap.properties.tileHeight,
-                baseRect.w * currentTilemap.properties.tileWidth,
-                baseRect.h * currentTilemap.properties.tileHeight,
-                Color.meat,
-                false
-            );
-
-            if (dragSide == "left" || dragSide == "right") {
-                Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 5, Input.mouseY - 3, iconRects.drag_h);
-            } else {
-                Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 3, Input.mouseY - 5, iconRects.drag_v);
-            }
-
-            if (Input.mouseLeftUp) {
-                resizeCanvas(dragSide, amount);
-                state = "edit";
-            }
+            canvasResize();
         break;
 
         case "edit":
-            drawCanvas();
-
-            tileX = Math.floor((Input.mouseX+camera.x) / currentTilemap.properties.tileWidth);
-            tileY = Math.floor((Input.mouseY+camera.y) / currentTilemap.properties.tileHeight);
-            mouseX = tileX * currentTilemap.properties.tileWidth;
-            mouseY = tileY * currentTilemap.properties.tileHeight;
-            Draw.rect(mouseX - camera.x, mouseY - camera.y, currentTilemap.properties.tileWidth, currentTilemap.properties.tileHeight, Color.white, false);
-
-            cameraControls(dt);
-
-            showPointer = true;
-            if (tileX == -1 || tileX == currentTilemap.properties.width) {
-                showPointer = false;
-                Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 5, Input.mouseY - 3, iconRects.drag_h);
-
-                if (Input.mouseLeftDown) {
-                    registerUndo();
-                    if (tileX == -1) {
-                        dragSide = "left";
-                        dragStart = tileX;
-                        state = "canvasResize";
-                    } else {
-                        dragSide = "right";
-                        dragStart = tileX;
-                        state = "canvasResize";
-                    }
-                }
-
-            } else if (tileY == -1 || tileY == currentTilemap.properties.height) {
-                showPointer = false;
-                Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 3, Input.mouseY - 5, iconRects.drag_v);
-
-                if (Input.mouseLeftDown) {
-                    registerUndo();
-                    if (tileY == -1) {
-                        dragSide = "top";
-                        dragStart = tileY;
-                        state = "canvasResize";
-                    } else {
-                        dragSide = "bottom";
-                        dragStart = tileY;
-                        state = "canvasResize";
-                    }
-                }
-
-            } else {
-
-                if (Input.mouseRightDown) {
-                    if (tileX >= 0 && tileY >= 0 && tileX < currentTilemap.properties.width && tileY < currentTilemap.properties.height) {
-                        var index = tileX + tileY * currentTilemap.properties.width;
-                        currentTile = currentTilemap.tiles[index];
-                    }
-                }
-
-                if (tool == "paint" && Input.mouseLeftDown) {
-                    registerUndo();
-                }
-        
-                if (tool == "paint" && Input.mouseLeft) {
-                    if (tileX >= 0 && tileY >= 0 && tileX < currentTilemap.properties.width && tileY < currentTilemap.properties.height) {
-                        var index = tileX + tileY * currentTilemap.properties.width;
-                        if (currentTilemap.tiles[index] != currentTile) {
-                            currentTilemap.tiles[index] = currentTile;
-                            currentTilemap.dirty = true;
-                        }
-                    }
-                }
-
-                if (tool == "fill" && Input.mouseLeftDown) {
-                    registerUndo();
-                    if (tileX >= 0 && tileY >= 0 && tileX < currentTilemap.properties.width && tileY < currentTilemap.properties.height) {
-                        fill(tileX, tileY, currentTile);
-                        currentTilemap.dirty = true;
-                    }
-                }
-            }
-
-            if (Input.getKeyDown(Key.tab)) {
-                state = "palette";
-            }
+            paintMode(dt);
         break;
     }
+
+    if (showHelp) helpScreen();
 
     toolbar();
     
@@ -513,8 +124,6 @@ function update(dt)
             undo();
         }
     }
-
-    
 }
 
 function cameraControls(dt)
@@ -555,8 +164,8 @@ function toolbar()
     if (state == "properties") { Draw.rect(0, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
     if (state == "edit" && tool == "paint") { Draw.rect(16, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
     if (state == "edit" && tool == "fill") { Draw.rect(32, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
-    //if (state == "edit" && tool == "entity") { Draw.rect(48, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
-    if (state == "entityEditor") { Draw.rect(48, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
+    if (state == "gadgetEditor") { Draw.rect(48, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
+    if (showHelp) { Draw.rect(96, Draw.screenHeight - 16, 16, 16, Color.disaster, true); }
 
     Draw.texture(
         "tools/sprites/tileicons.png",
@@ -581,9 +190,9 @@ function toolbar()
 
     Draw.texture(
         "tools/sprites/tileicons.png",
-        48 + 8 - iconRects.entity.w/2, 
-        Draw.screenHeight - 8 - iconRects.entity.h/2, 
-        iconRects.entity
+        48 + 8 - iconRects.gadget.w/2, 
+        Draw.screenHeight - 8 - iconRects.gadget.h/2, 
+        iconRects.gadget
     );
 
     Draw.texture(
@@ -602,38 +211,45 @@ function toolbar()
 
     Draw.texture(
         "tools/sprites/tileicons.png",
-        96 + 8 - iconRects.play.w/2, 
+        96 + 8 - iconRects.help.w/2, 
+        Draw.screenHeight - 8 - iconRects.help.h/2, 
+        iconRects.help
+    );
+
+    Draw.texture(
+        "tools/sprites/tileicons.png",
+        112 + 8 - iconRects.play.w/2, 
         Draw.screenHeight - 8 - iconRects.play.h/2, 
         iconRects.play
     );
 
     if (Input.mouseY >= Draw.screenHeight-16) {
-        if (Input.mouseX < 16*7) {
+        if (Input.mouseX < 16*8) {
             var index = Math.floor(Input.mouseX / 16);
             Draw.rect(index * 16, Draw.screenHeight - 16, 16, 16, Color.white, false);
 
             if (index == 0) { tooltip = "properties"; }
             if (index == 1) { tooltip = "paint"; }
             if (index == 2) { tooltip = "fill"; }
-            if (index == 3) { tooltip = "entities"; }
+            if (index == 3) { tooltip = "gadgets"; }
             if (index == 4) { tooltip = "save"; }
             if (index == 5) { tooltip = "load"; }
-            if (index == 6) { tooltip = "play"; }
+            if (index == 6) { tooltip = "help"; }
+            if (index == 7) { tooltip = "test"; }
 
             if (Input.mouseLeftDown) {
 
                 if (index == 0) { state = "properties" }
                 if (index == 1) { state = "edit"; tool = "paint"; }
                 if (index == 2) { state = "edit"; tool = "fill"; }
-                // if (index == 3) { state = "edit"; tool = "entity"; }
-                if (index == 3) { state = "entityEditor"; }
+                if (index == 3) { state = "gadgetEditor"; }
                 if (index == 4) { filebrowser.save(
                     currentTilemap.properties.name+".tilemap",
                     "",
                     function(savepath) { 
                         log("saving to: "+savepath);
                         Assets.unload(savepath); 
-                        Assets.unload(autosavePath); 
+                        Assets.unload(autosavePath);
                         currentTilemap.save(savepath); 
                         currentTilemap.save(autosavePath); 
                     }
@@ -650,27 +266,17 @@ function toolbar()
                     );
                 }
                 if (index == 6) { 
-                    currentTilemap.save(autosavePath);
+                    showHelp =! showHelp;
+                }
+                if (index == 7) { 
                     Assets.unload(autosavePath);
-                    var game = load("plat/game.js");
-                    game.levelPath = autosavePath;
-                    scenes.switchScene(game);
+                    currentTilemap.save(autosavePath);
+                    Engine.setMouseVisible(true);
+                    scenes.openScene(currentTilemap);
                 }
             }
         }
     }
-
-    
-
-    // gui.x = 0; gui.y = 240-Draw.fontHeight;
-    // gui.button("properties", function() { state = "properties" });
-
-
-    // gui.x = 80; gui.y = 240-Draw.fontHeight;
-    // gui.button("edit", function() { state = "edit" });
-
-    // gui.x = 120; gui.y = 240-Draw.fontHeight;
-    // gui.button("entities", function() { state = "entityEditor" });
 }
 
 function drawCanvas()
@@ -728,4 +334,424 @@ function resizeCanvas(direction, amount)
 
     if (direction == "left") camera.x += currentTilemap.properties.tileWidth * amount;
     if (direction == "top") camera.y += currentTilemap.properties.tileHeight * amount;
+}
+
+function gadgetEditor(dt)
+{
+    cameraControls(dt);
+        
+    drawCanvas();
+    showPointer = true;
+
+    hoverGadget = -1;
+    for (var i = 0; i < currentTilemap.gadgets.length; i++)
+    {
+        var ent = currentTilemap.gadgets[i];
+        var entSize = {w: 16, h: 16};
+        if (ent.preview != "") {
+            entSize = Assets.getTextureSize(ent.preview);
+        }
+
+        // check hovers
+        if (Math.abs(Input.mouseX - (ent.x - camera.x)) < entSize.w/2 && Math.abs(Input.mouseY - (ent.y - camera.y)) < entSize.h/2) {
+            if (hoverGadget == -1) {
+                hoverGadget = i;
+            } else {
+                // do a distance check
+                var d1 = Math.abs(Input.mouseX - (ent.x - camera.x)) + Math.abs(Input.mouseY - (ent.y - camera.y));
+                var d2 = Math.abs(Input.mouseX - (currentTilemap.gadgets[hoverGadget].x - camera.x)) + Math.abs(Input.mouseY - (currentTilemap.gadgets[hoverGadget].y - camera.y));
+                if (d1 < d2) hoverGadget = i;
+            }
+        }
+
+        // draw them
+        if (ent.preview != "") {
+            Draw.texture(ent.preview, -camera.x + ent.x - entSize.w/2, -camera.y + ent.y - entSize.h/2);
+        } else {
+            Draw.texture("tools/sprites/tileicons.png", -camera.x + ent.x - iconRects.gadget.w/2, -camera.y + ent.y - iconRects.gadget.h/2, iconRects.gadget);
+        }
+    }
+
+    if (gadgetDrag != -1) {
+
+        var ent = currentTilemap.gadgets[gadgetDrag];
+
+        if (Input.mouseRightDown) {
+            ent.x = gadgetDragStart.x;
+            ent.y = gadgetDragStart.y;
+            gadgetDrag = -1;
+        }
+
+        ent.x = Input.mouseX + camera.x - gadgetDragOffset.x;
+        ent.y = Input.mouseY + camera.y - gadgetDragOffset.y;
+        
+        if (Input.getKey(Key.leftcontrol)) {
+            if (ent.preview != "") {
+                var size = Assets.getTextureSize(ent.preview);
+                Draw.texture(ent.preview, -camera.x + gadgetDragStart.x - size.w/2, -camera.y + gadgetDragStart.y - size.h/2);
+            } else {
+                Draw.texture("tools/sprites/tileicons.png", -camera.x + gadgetDragStart.x - iconRects.gadget.w/2, -camera.y + gadgetDragStart.y - iconRects.gadget.h/2, iconRects.gadget);
+            }
+        }
+
+        if (Input.mouseLeftUp) {
+            registerUndo();
+            if (Input.getKey(Key.leftcontrol)) {
+                currentTilemap.gadgets.push({
+                    script:ent.script,
+                    preview:ent.preview,
+                    name: ent.name,
+                    x: gadgetDragStart.x,
+                    y: gadgetDragStart.y,
+                    properties : JSON.parse(JSON.stringify(ent.properties))
+                });
+            }
+
+            gadgetDrag = -1;
+        }
+
+    } else {
+
+        if (hoverGadget != -1) {
+
+            if (Input.mouseLeftDown) {
+                registerUndo();
+                gadgetDrag = hoverGadget;
+                gadgetDragStart.x = currentTilemap.gadgets[hoverGadget].x;
+                gadgetDragStart.y = currentTilemap.gadgets[hoverGadget].y;
+                gadgetDragOffset.x = (Input.mouseX + camera.x) - gadgetDragStart.x;
+                gadgetDragOffset.y = (Input.mouseY + camera.y) - gadgetDragStart.y;
+
+                currentGadget = hoverGadget;
+            }
+
+            if (Input.getKey(Key.leftcontrol)) {
+                Draw.texture("tools/sprites/tileicons.png", Input.mouseX + 4, Input.mouseY + 4, iconRects.copy);
+            }
+        }
+
+    }
+
+    if (gadgetRClickMenuOpen) {
+        gui.x = gadgetRClickPos.x;
+        gui.y = gadgetRClickPos.y;
+
+        if (currentGadget == -1) {
+            gui.button("new gadget", function() { 
+                registerUndo();
+                currentTilemap.gadgets.push({
+                    script:"",
+                    preview:"",
+                    name: "gadget",
+                    x: Input.mouseX + camera.x,
+                    y: Input.mouseY + camera.y,
+                    properties : {}
+                });
+                gadgetRClickMenuOpen = false;
+            });
+        } else {
+            gui.button("delete", function() {
+                registerUndo();
+                currentTilemap.gadgets.splice(currentGadget, 1);
+                currentGadget = -1;
+                gadgetRClickMenuOpen = false;
+            });
+            if (currentGadget == -1) return;
+        }
+
+    }
+
+    if (Input.mouseRightDown) {
+        gadgetRClickMenuOpen = true;
+        gadgetRClickPos.x = Input.mouseX;
+        gadgetRClickPos.y = Input.mouseY;
+    }
+
+    if (currentGadget != -1)
+    {
+        var ent = currentTilemap.gadgets[currentGadget];
+        var entSize = {w: 16, h: 16};
+        if (ent.preview != "") {
+            entSize = Assets.getTextureSize(ent.preview);
+        }
+        gui.y = 8;
+        gui.x = 8;
+        ent.name = gui.textField("name", ent.name);
+        if (gui.button("script: "+ent.script, function() {
+            filebrowser.browse(".js", "", 
+                function(path) {ent.script = path}
+            );
+        }));
+        if (gui.button("preview:"+ent.preview, function() {
+            filebrowser.browse(".png", "", 
+                function(path) {ent.preview = path}
+            );
+        }));
+        ent.properties = gui.objectEditor("properties", ent.properties);
+        
+        if (addTextProp) {
+            newName = gui.textField("name:", newName);
+            gui.button("done", function() { ent.properties[newName] = "text"; addTextProp = false; });
+            gui.button("cancel", function() { newName = "prop"; addTextProp = false; })
+        } else {
+            gui.button("add text property", function() { addTextProp = true; newName = "prop"; });
+        }
+
+        if (addNumberProp) {
+            newName = gui.textField("name:", newName);
+            gui.button("done", function() { ent.properties[newName] = 0; addNumberProp = false; });
+            gui.button("cancel", function() { newName = "prop"; addNumberProp = false; })
+        } else {
+            gui.button("add number property", function() { addNumberProp = true; newName = "prop"; });
+        }
+
+        if (ent.preview != "") {
+            var size = Assets.getTextureSize(ent.preview);
+            Draw.texture(ent.preview, 320 - size.w, 0);
+        }
+
+        Draw.rect(
+            -entSize.w/2 + currentTilemap.gadgets[currentGadget].x - camera.x,
+            -entSize.h/2 + currentTilemap.gadgets[currentGadget].y - camera.y,
+            entSize.w, entSize.h,
+            Color.disaster,
+            false
+        );
+    }
+
+    if (Input.mouseLeftDown) {
+        gadgetRClickMenuOpen = false;
+        if (hoverGadget == -1 && !gui.hovered) {
+            currentGadget = -1;
+        }
+    }
+
+    if (Input.mouseLeft) {
+        clickTime += dt;
+    }
+
+    if (Input.mouseLeftUp) {
+        clickTime = 0;
+    }
+
+    if (hoverGadget != -1)
+    {   
+        var ent = currentTilemap.gadgets[hoverGadget];
+        var entSize = {w: 16, h: 16};
+        if (ent.preview != "") {
+            entSize = Assets.getTextureSize(ent.preview);
+        }
+        Draw.rect(
+            -entSize.w/2 + currentTilemap.gadgets[hoverGadget].x - camera.x,
+            -entSize.h/2 + currentTilemap.gadgets[hoverGadget].y - camera.y,
+            entSize.w, entSize.h,
+            Color.white,
+            false
+        );
+    }
+}
+
+function propertyEditor()
+{
+    gui.label("properties:");
+    currentTilemap.properties.name = gui.textField("name:", currentTilemap.properties.name);
+    gui.button("texture: " + currentTilemap.properties.texture, function() { 
+        filebrowser.browse(".png", "", 
+            function (path) { currentTilemap.properties.texture = path; }
+        );
+    });
+    currentTilemap.properties.tileWidth = gui.numberField("tile width", currentTilemap.properties.tileWidth);
+    currentTilemap.properties.tileHeight = gui.numberField("tile height", currentTilemap.properties.tileHeight);
+
+    Draw.texture(currentTilemap.properties.texture, 0, gui.y);
+    if (currentTilemap.properties.tileWidth > 1 && currentTilemap.properties.tileHeight > 1) {
+        var textureSize = Assets.getTextureSize(currentTilemap.properties.texture);
+        for (var i = 0; i <= textureSize.w; i+= currentTilemap.properties.tileWidth) {
+            Draw.line(i, gui.y, i, gui.y + textureSize.h, Color.gray);
+        }
+        
+        for (var i = 0; i <= textureSize.h; i+= currentTilemap.properties.tileHeight) {
+            Draw.line(0, gui.y + i, textureSize.w, gui.y + i, Color.gray);
+        }
+    }
+}
+
+function paletteView()
+{
+    var numTilesX = Math.floor(Assets.getTextureSize(currentTilemap.properties.texture).w / currentTilemap.properties.tileWidth);
+    var numTilesY = Math.floor(Assets.getTextureSize(currentTilemap.properties.texture).h / currentTilemap.properties.tileHeight);
+
+    var tileX = Math.floor(Input.mouseX / currentTilemap.properties.tileWidth);
+    var tileY = Math.floor(Input.mouseY / currentTilemap.properties.tileHeight);
+    var mouseX = tileX * currentTilemap.properties.tileWidth;
+    var mouseY = tileY * currentTilemap.properties.tileHeight;
+
+    drawCanvas();
+    Draw.texture(currentTilemap.properties.texture, 0, 0);
+    Draw.rect(mouseX, mouseY, currentTilemap.properties.tileWidth, currentTilemap.properties.tileHeight, Color.white, false);
+
+    if (Input.mouseLeftDown) {
+        if (tileX < numTilesX && tileY < numTilesY) {
+            currentTile = tileX + (tileY * numTilesX);
+            return;
+        }
+    }
+
+    Draw.rect(
+        (currentTile % numTilesX) * currentTilemap.properties.tileWidth, 
+        Math.floor(currentTile / numTilesX) * currentTilemap.properties.tileHeight, 
+        currentTilemap.properties.tileWidth, 
+        currentTilemap.properties.tileHeight, 
+        Color.disaster, 
+        false
+    );
+
+    if (Input.getKeyUp(Key.tab)) {
+        state = "edit";
+    }
+}
+
+function canvasResize()
+{
+    showPointer = false;
+    drawCanvas();
+
+    var baseRect = {
+        x: 0, y: 0, w: currentTilemap.properties.width, h:currentTilemap.properties.height
+    };
+
+    //cameraControls();
+
+    tileX = Math.floor((Input.mouseX+camera.x) / currentTilemap.properties.tileWidth);
+    tileY = Math.floor((Input.mouseY+camera.y) / currentTilemap.properties.tileHeight);
+
+    var amount = 0;
+
+    if (dragSide == "left") { baseRect.x = tileX + 1; baseRect.w += dragStart - tileX; amount = dragStart - tileX; }
+    if (dragSide == "right") { baseRect.w = tileX; amount = tileX - dragStart; }
+    if (dragSide == "top") { baseRect.y = tileY + 1; baseRect.h += dragStart - tileY; amount = dragStart - tileY; }
+    if (dragSide == "bottom") { baseRect.h = tileY; amount = tileY - dragStart; }
+
+    Draw.rect(
+        -camera.x + baseRect.x * currentTilemap.properties.tileWidth, 
+        -camera.y + baseRect.y * currentTilemap.properties.tileHeight,
+        baseRect.w * currentTilemap.properties.tileWidth,
+        baseRect.h * currentTilemap.properties.tileHeight,
+        Color.meat,
+        false
+    );
+
+    if (dragSide == "left" || dragSide == "right") {
+        Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 5, Input.mouseY - 3, iconRects.drag_h);
+    } else {
+        Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 3, Input.mouseY - 5, iconRects.drag_v);
+    }
+
+    if (Input.mouseLeftUp) {
+        resizeCanvas(dragSide, amount);
+        state = "edit";
+    }
+}
+
+function paintMode(dt)
+{
+    drawCanvas();
+
+    var tileX = Math.floor((Input.mouseX+camera.x) / currentTilemap.properties.tileWidth);
+    var tileY = Math.floor((Input.mouseY+camera.y) / currentTilemap.properties.tileHeight);
+    var mouseX = tileX * currentTilemap.properties.tileWidth;
+    var mouseY = tileY * currentTilemap.properties.tileHeight;
+    Draw.rect(mouseX - camera.x, mouseY - camera.y, currentTilemap.properties.tileWidth, currentTilemap.properties.tileHeight, Color.white, false);
+
+    cameraControls(dt);
+
+    showPointer = true;
+    if (tileX == -1 || tileX == currentTilemap.properties.width) {
+        showPointer = false;
+        Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 5, Input.mouseY - 3, iconRects.drag_h);
+
+        if (Input.mouseLeftDown) {
+            registerUndo();
+            if (tileX == -1) {
+                dragSide = "left";
+                dragStart = tileX;
+                state = "canvasResize";
+            } else {
+                dragSide = "right";
+                dragStart = tileX;
+                state = "canvasResize";
+            }
+        }
+
+    } else if (tileY == -1 || tileY == currentTilemap.properties.height) {
+        showPointer = false;
+        Draw.texture("tools/sprites/tileicons.png", Input.mouseX - 3, Input.mouseY - 5, iconRects.drag_v);
+
+        if (Input.mouseLeftDown) {
+            registerUndo();
+            if (tileY == -1) {
+                dragSide = "top";
+                dragStart = tileY;
+                state = "canvasResize";
+            } else {
+                dragSide = "bottom";
+                dragStart = tileY;
+                state = "canvasResize";
+            }
+        }
+
+    } else {
+
+        if (Input.mouseRightDown) {
+            if (tileX >= 0 && tileY >= 0 && tileX < currentTilemap.properties.width && tileY < currentTilemap.properties.height) {
+                var index = tileX + tileY * currentTilemap.properties.width;
+                currentTile = currentTilemap.tiles[index];
+            }
+        }
+
+        if (tool == "paint" && Input.mouseLeftDown) {
+            registerUndo();
+        }
+
+        if (tool == "paint" && Input.mouseLeft) {
+            if (tileX >= 0 && tileY >= 0 && tileX < currentTilemap.properties.width && tileY < currentTilemap.properties.height) {
+                var index = tileX + tileY * currentTilemap.properties.width;
+                if (currentTilemap.tiles[index] != currentTile) {
+                    currentTilemap.tiles[index] = currentTile;
+                    currentTilemap.dirty = true;
+                }
+            }
+        }
+
+        if (tool == "fill" && Input.mouseLeftDown) {
+            registerUndo();
+            if (tileX >= 0 && tileY >= 0 && tileX < currentTilemap.properties.width && tileY < currentTilemap.properties.height) {
+                fill(tileX, tileY, currentTile);
+                currentTilemap.dirty = true;
+            }
+        }
+    }
+
+    if (Input.getKeyDown(Key.tab)) {
+        state = "palette";
+    }
+}
+
+function helpScreen()
+{
+    drawCanvas();
+
+    Draw.rect(17, 17, 186, 88, Color.black, true);
+    Draw.rect(18, 18, 184, 86, Color.brown, true);
+
+    Draw.textStyled("$s$w$rDISASTER ENGINE TILEMAP EDITOR", 20, 20);
+    
+    Draw.textStyled("WASD: pan the canvas", 20, 24 + Draw.fontHeight * 2);
+
+    Draw.textStyled("paint mode: ", 20, 24 + Draw.fontHeight * 4);
+    Draw.textStyled("TAB: open the palette", 20, 24 + Draw.fontHeight * 5);
+
+    Draw.textStyled("gadget mode: ", 20, 24 + Draw.fontHeight * 7);
+    Draw.textStyled("r-click: context menu", 20, 24 + Draw.fontHeight * 8);
+    Draw.textStyled("l-click: select and move", 20, 24 + Draw.fontHeight * 9);
 }

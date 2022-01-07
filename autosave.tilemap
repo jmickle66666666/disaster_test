@@ -1,0 +1,1 @@
+{"properties":{"name":"new map","texture":"voxtex.png","tileWidth":16,"tileHeight":16,"width":8,"height":8,"textureSize":{"w":64,"h":64},"dirty":true},"tiles":[8,9,8,8,8,8,9,8,8,9,8,8,8,8,9,8,8,9,8,9,9,9,9,8,8,9,9,9,8,8,8,8,8,8,8,8,8,8,8,8,1,1,1,1,10,1,1,1,1,1,1,1,10,1,1,1,8,8,8,8,8,8,8,8],"gadgets":[],"autotiles":[16,32,48,64,80,96],"dirty":false,"buffer":"1544655012"}

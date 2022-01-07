@@ -21,7 +21,7 @@ function init() {
     console.init();
 
     // load a default scene here!
-    //scenes.openScene(load("tools/filebrowser.js"));
+    scenes.openScene(load("tools/tilemapeditor.js"));
 
     initialised = true;
 }
