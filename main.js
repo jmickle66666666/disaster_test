@@ -12,6 +12,7 @@ function randomResolution()
 
 function init() {
     Engine.setResolution(320,240,2);
+    // Engine.setResolution(640,480,2);
     // randomResolution();
     Engine.setTargetFPS(60);
     Draw.loadFont("lib/fontsmall.png");
@@ -21,7 +22,9 @@ function init() {
     console.init();
 
     // load a default scene here!
-    scenes.openScene(load("tools/tilemapeditor.js"));
+    //scenes.openScene(load("linetest.js"));
+    scenes.openScene(load("tools/zoneeditor.js"));
+    //  scenes.openScene(load("voxthing.js"));
 
     initialised = true;
 }

@@ -3,7 +3,7 @@ var gui = load("lib/gui.js");
 var scenes = load("lib/scenes.js");
 var filebrowser = load("tools/filebrowser.js");
 
-var state = "edit";
+var state = "paint";
 var currentTilemap;
 var currentTile = 0;
 var camera = {x: 0, y: 0};
@@ -60,7 +60,7 @@ var iconRects = {
 
 function init()
 {
-    state = "gadgetEditor";
+    state = "edit";
 
     if (Assets.exists(autosavePath)) {
         currentTilemap = tilemap.load(autosavePath);
@@ -551,30 +551,108 @@ function gadgetEditor(dt)
     }
 }
 
+var lineLength = 50;
+var toothThick = 10;
+var teeth = 5;
+var cograd = 42;
+var brighterBrown = {r: Color.brown.r + 10, g: Color.brown.g + 10, b: Color.brown.b + 10}
 function propertyEditor()
 {
-    gui.label("properties:");
+    Draw.rect(0, 0, 320, 240, Color.darkbrown, true);
+    
+    gui.x = 5;
+    gui.y = 5;
     currentTilemap.properties.name = gui.textField("name:", currentTilemap.properties.name);
+    gui.y += 5;
     gui.button("texture: " + currentTilemap.properties.texture, function() { 
         filebrowser.browse(".png", "", 
             function (path) { currentTilemap.properties.texture = path; }
         );
     });
+    gui.y += 5;
     currentTilemap.properties.tileWidth = gui.numberField("tile width", currentTilemap.properties.tileWidth);
     currentTilemap.properties.tileHeight = gui.numberField("tile height", currentTilemap.properties.tileHeight);
 
-    Draw.texture(currentTilemap.properties.texture, 0, gui.y);
+    
+    var textureSize = Assets.getTextureSize(currentTilemap.properties.texture);
+    var tilemapx = (Draw.screenWidth - textureSize.w) / 2;
+    var tilemapy = (Draw.screenHeight - textureSize.h) / 2;
+    Draw.texture(currentTilemap.properties.texture, tilemapx, tilemapy);
     if (currentTilemap.properties.tileWidth > 1 && currentTilemap.properties.tileHeight > 1) {
-        var textureSize = Assets.getTextureSize(currentTilemap.properties.texture);
         for (var i = 0; i <= textureSize.w; i+= currentTilemap.properties.tileWidth) {
-            Draw.line(i, gui.y, i, gui.y + textureSize.h, Color.gray);
+            Draw.line(tilemapx + i, tilemapy, tilemapx + i, tilemapy + textureSize.h, Color.gray);
         }
         
         for (var i = 0; i <= textureSize.h; i+= currentTilemap.properties.tileHeight) {
-            Draw.line(0, gui.y + i, textureSize.w, gui.y + i, Color.gray);
+            Draw.line(tilemapx, tilemapy + i, tilemapx + textureSize.w, tilemapy + i, Color.gray);
         }
     }
+
+    var t = Engine.getTime();
+    var centerX = 10;
+    var centerY = 210;
+    
+    
+    
+    for (var i = 0; i < 3.139; i += 3.14/teeth) {
+        var angle = t * 1;
+        var endX = centerX + Math.cos(angle + i) * lineLength;
+        var endY = centerY + Math.sin(angle + i) * lineLength;
+        var ex1 = endX + Math.cos(angle + i + 1.57) * toothThick;
+        var ey1 = endY + Math.sin(angle + i + 1.57) * toothThick;
+        var ex2 = endX + Math.cos(angle + i - 1.57) * toothThick;
+        var ey2 = endY + Math.sin(angle + i - 1.57) * toothThick;
+
+        var startX = centerX + Math.cos(angle + i + 3.14) * lineLength;
+        var startY = centerY + Math.sin(angle + i + 3.14) * lineLength;
+        var sx1 = startX + Math.cos(angle + i + 1.57) * toothThick;
+        var sy1 = startY + Math.sin(angle + i + 1.57) * toothThick;
+        var sx2 = startX + Math.cos(angle + i - 1.57) * toothThick;
+        var sy2 = startY + Math.sin(angle + i - 1.57) * toothThick;
+        
+        Draw.triangle(sx1, sy1, sx2, sy2, ex1, ey1, Color.brown, true);
+        Draw.triangle(sx2, sy2, ex2, ey2, ex1, ey1, Color.brown, true);
+    }
+    cograd = lerp(42, cograd, 0.95);
+    Draw.circle(centerX, centerY, cograd, Color.brown, true);
+    lineLength = lerp(50, lineLength, 0.95);
+    toothThick = lerp(10, toothThick, 0.95);
+    teeth = lerp(5, teeth, 0.95);
+    if (Input.mouseX < 20 && Input.mouseY > 205 && Input.mouseY < 215) {
+        Draw.circle(centerX, centerY, cograd, brighterBrown, true);
+        if (Input.mouseLeftDown) {
+        var r = Math.floor(Math.random() * 4);
+        switch (r) {
+            case 0:
+                lineLength = 80;
+                cograd = 72;
+                teeth = 15;
+                toothThick = 1;
+                break;
+            case 1:
+                lineLength = 20;
+                cograd = 18;
+                toothThick = 1;
+                teeth = 0;
+                break;
+            case 2:
+                lineLength = 45;
+                cograd = 38;
+                teeth = 0;
+                break;
+            case 3:
+                lineLength = 45;
+                cograd = 38;
+                teeth = 10;
+                toothThick = 1;
+                break;
+        }
+        
+    }
+    }
 }
+
+function lerp(a, b, t) { return a * (1 - t) + b * t; }
 
 function paletteView()
 {

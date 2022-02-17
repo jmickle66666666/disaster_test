@@ -235,6 +235,64 @@ vec3 DitherCrunch(vec3 col, vec2 p){
     return col;
 }
 
+
+const vec4 egaPalette[16] = vec4[16](
+        vec4(0.0, 0.0, 0.0, 256.0),
+        vec4(0.0, 0.0, 170.0, 256.0),
+        vec4(0.0, 170.0, 0.0, 256.0),
+        vec4(0.0, 170.0, 170.0, 256.0),
+        vec4(170.0, 0.0, 0.0, 256.0),
+        vec4(170.0, 0.0, 170.0, 256.0),
+        vec4(170.0, 85.0, 0.0, 256.0),
+        vec4(170.0, 170.0, 170.0, 256.0),
+        vec4(85.0, 85.0, 85.0, 256.0),
+        vec4(85.0, 85.0, 255.0, 256.0),
+        vec4(85.0, 255.0, 85.0, 256.0),
+        vec4(85.0, 255.0, 255.0, 256.0),
+        vec4(255.0, 85.0, 85.0, 256.0),
+        vec4(255.0, 85.0, 255.0, 256.0),
+        vec4(255.0, 255.0, 85.0, 256.0),
+        vec4(255.0, 255.0, 255.0, 256.0)
+);
+
+vec4 toEGA(vec4 color)
+{
+    int distIndex = 0;
+    float closestDistance = distance(color*256, egaPalette[0]);
+    for (int i = 1; i < 16; i++)
+    {
+        float dist = distance(color*256, egaPalette[i]);
+        if (dist < closestDistance) {
+            closestDistance = dist;
+            distIndex = i;
+        }
+    }
+    return egaPalette[distIndex] / 256;
+}
+
+
+const vec4 cgaPalette[4] = vec4[4](
+    vec4(0.0, 0.0, 0.0, 256.0),
+    vec4(85.0, 255.0, 255.0, 256.0),
+    vec4(255.0, 85.0, 255.0, 256.0),
+    vec4(255.0, 255.0, 255.0, 256.0)
+);
+
+vec4 toCGA(vec4 color)
+{
+    int distIndex = 0;
+    float closestDistance = distance(color*256, cgaPalette[0]);
+    for (int i = 1; i < 4; i++)
+    {
+        float dist = distance(color*256, cgaPalette[i]);
+        if (dist < closestDistance) {
+            closestDistance = dist;
+            distIndex = i;
+        }
+    }
+    return cgaPalette[distIndex] / 256;
+}
+
 void main()
 {
     //fragTexCoord.x = floor(fragTexCoord.x / screenSize.x) * screenSize.x;
@@ -242,8 +300,8 @@ void main()
     // fragTexCoord.x = x;
     vec4 col = texture(texture0, fg);
 
-    fg.x = floor(fg.x * screenSize.x) / screenSize.x;
-    fg.y = floor(fg.y * screenSize.y) / screenSize.y;
+    // fg.x = floor(fg.x * screenSize.x) / screenSize.x;
+    // fg.y = floor(fg.y * screenSize.y) / screenSize.y;
     //fragTexCoord.r *= screenSize.r;
     // col.xyz = normalAt(fragTexCoord);
 
@@ -291,7 +349,9 @@ void main()
     vec3 d2 = DitherCrunch(finalColor.rgb, fg * screenSize.xy);
     finalColor.rgb = d2;
 
-    
+
+    // finalColor = 1 - ((1-finalColor) * (1-finalColor));
+    // finalColor = toCGA(finalColor);
 
     //finalColor = thing2(fragTexCoord);
 

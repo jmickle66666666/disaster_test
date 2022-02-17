@@ -3,11 +3,11 @@ var camera = load("lib/camera.js");
 var vmath = load("lib/vmath.js");
 var zone = load("lib/zone.js");
 var generators = load("lib/zonegenerators.js");
+var filebrowser = load("tools/filebrowser.js");
 
 var currentZone;
 var currentTool = "box";
 
-var textures;
 var time = 0;
 
 var snapSize = 0.5;
@@ -22,17 +22,7 @@ function init()
 
     currentZone = zone.createNew();
 
-    textures = [];
-    var paths = Assets.list().split(',');
-
-    for (var i = 0; i < paths.length; i++)
-    {
-        if (paths[i].endsWith(".png")) {
-            textures.push(paths[i]);
-        }
-    }
-
-    Audio.playMusic("tools/sounds/sampletext.ogg");
+    //  Audio.playMusic("tools/sounds/sampletext.ogg");
 }
 
 function update(dt)
@@ -50,6 +40,8 @@ function update(dt)
     if (Input.getKeyDown(Key.key1)) { currentTool = "select"; tools[currentTool].init(); }
     if (Input.getKeyDown(Key.key2)) { currentTool = "box"; tools[currentTool].init(); }
     if (Input.getKeyDown(Key.key3)) { currentTool = "vertex"; tools[currentTool].init(); }
+    if (Input.getKeyDown(Key.key4)) { currentTool = "edge"; tools[currentTool].init(); }
+    if (Input.getKeyDown(Key.key5)) { currentTool = "shapeExtrude"; tools[currentTool].init(); }
 
     if (Input.getKeyDown(Key.g)) { 
         regenerate();        
@@ -64,10 +56,7 @@ function update(dt)
 
     tools[currentTool].update(dt);
 
-
     zone.render(currentZone);
-
-    //gui.objectEditor(this);
 }
 
 function regenerate()
@@ -91,13 +80,6 @@ function undo()
 function writeUndo()
 {
     undoStack.push(JSON.stringify(currentZone));
-}
-
-function drawLine(start, end, color)
-{
-    var s = Draw.worldToScreenPoint(start);
-    var e = Draw.worldToScreenPoint(end);
-    Draw.line(s.x, s.y, e.x, e.y, color);
 }
 
 function getMouseHit()
@@ -141,19 +123,24 @@ var tools = {
     "vertex" : {
         selection : [],
         position : {x: 0, y: 0, z:0},
+
         modified : true,
         recalcPosition: function() {
             var center = {x: 0, y: 0, z: 0};
             for (var i = 0; i < this.selection.length; i++)
             {
-                center = vmath.add(center, this.selection[i].part.data.vertices[this.selection[i].vertex]);
+                if (this.selection[i].part.type == "mesh") {
+                    center = vmath.add(center, this.selection[i].part.data.vertices[this.selection[i].vertex]);
+                }
             }
             this.position = vmath.mul(center, 1 / this.selection.length);
         },
         moveSelectedVertices: function(amount) {
             for (var i = 0; i < this.selection.length; i++)
             {
-                this.selection[i].part.data.vertices[this.selection[i].vertex] = vmath.add(amount, this.selection[i].part.data.vertices[this.selection[i].vertex]);
+                if (this.selection[i].part.type == "mesh") {
+                    this.selection[i].part.data.vertices[this.selection[i].vertex] = vmath.add(amount, this.selection[i].part.data.vertices[this.selection[i].vertex]);
+                }
             }
             for (var i = 0; i < tools["select"].selection.length; i++) {
                 generators.generate(tools["select"].selection[i]);
@@ -165,7 +152,8 @@ var tools = {
         update: function(dt) {
             var selectedParts = tools["select"].selection;
             if (selectedParts.length == 0) {
-                gui.label("nothing selected :) great job");
+                //gui.label("nothing selected :) great job");
+                tools["select"].update(dt);
                 return;
             }
 
@@ -224,7 +212,162 @@ var tools = {
 
             for (var i = 0; i < this.selection.length; i++)
             {
-                var p = Draw.worldToScreenPoint(this.selection[i].part.data.vertices[this.selection[i].vertex]);
+                if (this.selection[i].part.type == "mesh") {
+                    var p = Draw.worldToScreenPoint(this.selection[i].part.data.vertices[this.selection[i].vertex]);
+                    Draw.circle(p.x, p.y, 3.5, Color.white, true);
+                } 
+            }
+
+            if (Input.mouseLeftDown && !gui.hovered) {
+                this.recalcPosition();
+            }
+
+            
+        }
+    },
+
+    "shapeExtrude" : {
+        selection : [],
+        extrudeSelected : false,
+        position : {x: 0, y: 0, z:0},
+        extrudePosition : {x: 0, y: 0, z:0},
+        extrudeCenter : {x: 0, y: 0, z:0},
+
+        modified : true,
+        recalcPosition: function() {
+            var center = {x: 0, y: 0, z: 0};
+            for (var i = 0; i < this.selection.length; i++)
+            {
+                center = vmath.add(center, this.selection[i].part.points[this.selection[i].point]);
+            }
+            this.position = vmath.mul(center, 1 / this.selection.length);
+        },
+        moveSelectedVertices: function(amount) {
+            for (var i = 0; i < this.selection.length; i++)
+            {
+                this.selection[i].part.points[this.selection[i].point] = vmath.add(amount, this.selection[i].part.points[this.selection[i].point]);
+            }
+            for (var i = 0; i < tools["select"].selection.length; i++) {
+                generators.generate(tools["select"].selection[i]);
+            }
+        },
+        init: function() {
+
+        },
+        update: function(dt) {
+            var selectedParts = tools["select"].selection;
+            if (selectedParts.length == 0) {
+                //gui.label("nothing selected :) great job");
+                tools["select"].update(dt);
+                return;
+            }
+
+            gui.label(this.extrudeSelected);
+
+            if (this.selection.length != 0 && this.extrudeSelected == false && !Input.getKey(Key.leftshift))
+            {
+                var pos = this.position;
+                var tempPos = vmath.copy(this.position);
+                if (gui.transform3d(tempPos)) {
+                    var offset = vmath.sub(tempPos, pos);
+                    var length = vmath.length(offset);
+                    length = Math.round(length / snapSize) * snapSize;
+                    var move = vmath.mul(vmath.normalise(offset), length);
+                    if (length != 0) {
+
+                        if (!this.modified) {
+                            writeUndo();
+                            this.modified = true;
+                        }
+                        Audio.playSound("tools/sounds/click4.wav");
+                    }
+                    this.moveSelectedVertices(move);
+                    this.recalcPosition();
+                }
+            }
+
+            if (this.extrudeSelected && !Input.getKey(Key.leftshift)) {
+                var tempPos = vmath.copy(this.extrudePosition);
+                if (gui.transform1d(tempPos, selectedParts[0].extrusion)) {
+                    var offset = vmath.sub(tempPos, this.extrudePosition);
+                    var length = vmath.length(offset);
+                    length = Math.round(length / snapSize) * snapSize;
+                    var move = vmath.mul(vmath.normalise(offset), length);
+                    if (length != 0) {
+                        if (!this.modified) {
+                            writeUndo();
+                            this.modified = true;
+                        }
+                        Audio.playSound("tools/sounds/click4.wav");
+                        selectedParts[0].extrusion = vmath.sub(tempPos, this.extrudeCenter);
+                        generators.generate(tools["select"].selection[0]);
+                    }
+                }
+            }
+
+            if (!Input.mouseLeft)
+            {
+                this.modified = false;
+            }
+
+            if (Input.mouseLeftDown && !gui.hovered && !Input.getKey(Key.leftshift)) {
+                this.selection = [];
+                this.extrudeSelected = false;
+                
+                Audio.playSound("tools/sounds/click2.wav");
+            }
+
+            for (var i = 0; i < selectedParts.length; i++)
+            {
+                var part = selectedParts[i];
+
+                this.extrudePosition = {x:0, y:0, z:0};
+
+                for (var j = 0; j < part.points.length; j++)
+                {
+                    this.extrudePosition.x += part.points[j].x;
+                    this.extrudePosition.y += part.points[j].y;
+                    this.extrudePosition.z += part.points[j].z;
+                    var p = Draw.worldToScreenPoint(part.points[j]);
+                    if (vmath.distance(p, {x:Input.mouseX, y:Input.mouseY}) < 6) {
+                        Draw.circle(p.x, p.y, 3.5, Color.disaster, true);
+                        if (Input.mouseLeftDown && !gui.hovered) {
+                            this.selection.push({point: j, part: part});
+                            Audio.playSound("tools/sounds/click3.wav");
+                        }
+                    } else {
+                        Draw.circle(p.x, p.y, 3.5, Color.disaster, false);
+                    }
+                }
+
+                this.extrudePosition.x /= part.points.length;
+                this.extrudePosition.y /= part.points.length;
+                this.extrudePosition.z /= part.points.length;
+
+                this.extrudeCenter = vmath.copy(this.extrudePosition);
+
+                this.extrudePosition = vmath.add(this.extrudePosition, part.extrusion);
+
+                if (selectedParts.length == 1) {
+                    var pc = Draw.worldToScreenPoint(this.extrudePosition);
+
+                    if (vmath.distance(pc, {x: Input.mouseX, y:Input.mouseY}) < 6) {
+                        Draw.circle(pc.x, pc.y, 3.5, Color.disaster, true);
+                        if (Input.mouseLeftDown && !gui.hovered) {
+                            this.selection = [];
+                            this.extrudeSelected = true;
+                            Audio.playSound("tools/sounds/click3.wav");
+                        }
+                    } else {
+                        Draw.circle(pc.x, pc.y, 3.5, Color.disaster, false);
+                    }
+                }
+
+            }
+
+            for (var i = 0; i < this.selection.length; i++)
+            {
+                var p = Draw.worldToScreenPoint(this.selection[i].part.points[this.selection[i].point]);
                 Draw.circle(p.x, p.y, 3.5, Color.white, true);
             }
 
@@ -235,6 +378,69 @@ var tools = {
             
         }
     },
+
+    "edge" :  {
+        selection : [],
+        position : {x: 0, y: 0, z:0},
+        modified : true,
+
+        init : function() {
+
+        },
+        
+        update : function (dt) {
+
+            var selectedParts = tools["select"].selection;
+            if (selectedParts.length == 0) {
+                //gui.label("nothing selected :) great job");
+                tools["select"].update(dt);
+                return;
+            }
+
+            for (var i = 0; i < selectedParts.length; i++)
+            {
+                var part = selectedParts[i];
+                if (part.type == "mesh") {
+                    for (var j = 0; j < part.data.indices.length; j++)
+                    {
+                        var j1 = j;
+                        var j2 = j + 1;
+                        if (j % 3 == 2) j2 = j - 2;
+
+                        var v1 = part.data.vertices[part.data.indices[j1]];
+                        var v2 = part.data.vertices[part.data.indices[j2]]
+
+                        var avg = {
+                            x: (v1.x + v2.x) / 2,
+                            y: (v1.y + v2.y) / 2,
+                            z: (v1.z + v2.z) / 2
+                        }
+
+                        // var p1 = Draw.worldToScreenPoint(v1);
+                        // var p2 = Draw.worldToScreenPoint(v2);
+                        //Draw.line(p1.x, p1.y, p2.x, p2.y, Color.disaster);
+
+
+                        var avs = Draw.worldToScreenPoint(avg);
+                        Draw.circle(avs.x, avs.y, 3.5, Color.disaster, false);
+                        // if (vmath.distance(p, {x:Input.mouseX, y:Input.mouseY}) < 6) {
+                        //     Draw.circle(p.x, p.y, 3.5, Color.disaster, true);
+                        //     if (Input.mouseLeftDown && !gui.hovered) {
+                        //         this.selection.push({vertex: j, part: part});
+                        //         Audio.playSound("tools/sounds/click3.wav");
+                        //     }
+                        // } else {
+                        //     Draw.circle(p.x, p.y, 3.5, Color.disaster, false);
+                        // }
+                    }
+                }
+            }
+            
+        }
+        
+
+    },
+
     "select" : {
         selection: [],
         position: {x:0, y:0, z:0},
@@ -279,6 +485,18 @@ var tools = {
                         center = vmath.add(generators.getCenter(this.selection[i]), center);
                     }
                     this.position = vmath.mul(center, 1 / this.selection.length);
+                }
+
+                if (Input.getKeyDown(Key.delete) && this.selection.length > 0) {
+                    writeUndo();
+                    for (var i = 0; i < currentZone.parts.length; i++)
+                    {
+                        if (this.selection.includes(currentZone.parts[i])) {
+                            currentZone.parts.splice(i, 1);
+                            i -= 1;
+                        }
+                    }
+                    this.selection = [];
                 }
                 
             }
@@ -327,7 +545,7 @@ var tools = {
         }
     },
     "box" : {
-        texture: "3dtests/floor.png",
+        texture: "textures/AQF019.png",
         state : "default",
         startHeight : 0,
         extrudeHeight : 0,
@@ -369,9 +587,20 @@ var tools = {
             var mouseHit = getMouseHit();
 
             if (Input.getKeyDown(Key.tab)) {
-                this.state = "texture";
-                this.textureListOffset = 0;
-                log("woops");
+                // this.state = "texture";
+                // this.textureListOffset = 0;
+
+                filebrowser.browse(
+                    ".png",
+                    "",
+                    function(loadpath) {
+                        tools[currentTool].texture = loadpath;
+                        //state = "edit";
+                        //return;
+                    }
+                );
+
+                // log("woops");
             }
 
             if (mouseHit.hit) {
@@ -404,7 +633,6 @@ var tools = {
 
                     var screenPoint = Draw.worldToScreenPoint(mouseHit.position);
                     Draw.circle(screenPoint.x, screenPoint.y, 5, Color.white, false);
-                    //drawLine(mouseHit.position, vmath.add(mouseHit.position, this.dragPlane.normal), Color.meat);
 
                     var start = vmath.copy(this.dragStart);
                     var end = vmath.copy(mouseHit.position);
@@ -425,10 +653,10 @@ var tools = {
                     b[domVecNames.ndb] = start[domVecNames.ndb];
                     b[domVecNames.dom] = getPlanePoint(domVecNames.nda, domVecNames.ndb, domVecNames.dom, end[domVecNames.nda], start[domVecNames.ndb], this.dragPlane);
 
-                    drawLine(start, a, Color.disaster);
-                    drawLine(a, end, Color.disaster);
-                    drawLine(end, b, Color.disaster);
-                    drawLine(b, start, Color.disaster);
+                    Draw.line3d(start, a, Color.disaster);
+                    Draw.line3d(a, end, Color.disaster);
+                    Draw.line3d(end, b, Color.disaster);
+                    Draw.line3d(b, start, Color.disaster);
 
                     this.points = [start, a, end, b];
                 }
@@ -441,10 +669,10 @@ var tools = {
 
                 if (this.state == "extruding")
                 {
-                    drawLine(this.points[0], this.points[1], Color.disaster);
-                    drawLine(this.points[1], this.points[2], Color.disaster);
-                    drawLine(this.points[2], this.points[3], Color.disaster);
-                    drawLine(this.points[3], this.points[0], Color.disaster);
+                    Draw.line3d(this.points[0], this.points[1], Color.disaster);
+                    Draw.line3d(this.points[1], this.points[2], Color.disaster);
+                    Draw.line3d(this.points[2], this.points[3], Color.disaster);
+                    Draw.line3d(this.points[3], this.points[0], Color.disaster);
 
                     var cross = vmath.normalise(vmath.cross(this.dragPlane.normal, Draw.getCameraTransform().forward));
                     var normal = vmath.cross(cross, this.dragPlane.normal);
@@ -470,15 +698,15 @@ var tools = {
                     var c = vmath.add(this.points[2], this.extrusion);
                     var d = vmath.add(this.points[3], this.extrusion);
 
-                    drawLine(a, b, Color.disaster);
-                    drawLine(b, c, Color.disaster);
-                    drawLine(c, d, Color.disaster);
-                    drawLine(d, a, Color.disaster);
+                    Draw.line3d(a, b, Color.disaster);
+                    Draw.line3d(b, c, Color.disaster);
+                    Draw.line3d(c, d, Color.disaster);
+                    Draw.line3d(d, a, Color.disaster);
 
-                    drawLine(this.points[0], a, Color.orange);
-                    drawLine(this.points[1], b, Color.orange);
-                    drawLine(this.points[2], c, Color.orange);
-                    drawLine(this.points[3], d, Color.orange);
+                    Draw.line3d(this.points[0], a, Color.orange);
+                    Draw.line3d(this.points[1], b, Color.orange);
+                    Draw.line3d(this.points[2], c, Color.orange);
+                    Draw.line3d(this.points[3], d, Color.orange);
                 }
 
                 if (Input.mouseLeftDown && this.state == "extruding")
@@ -526,5 +754,5 @@ function drawNormalCursor(mouseHit)
 {
     var screenPoint = Draw.worldToScreenPoint(mouseHit.position);
     Draw.circle(screenPoint.x, screenPoint.y, 5.5 + Math.sin(time * 3), Color.white, false);
-    drawLine(mouseHit.position, vmath.add(mouseHit.position, mouseHit.normal), Color.meat);
+    Draw.line3d(mouseHit.position, vmath.add(mouseHit.position, mouseHit.normal), Color.meat);
 }

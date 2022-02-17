@@ -77,8 +77,8 @@ function loadTools()
         {id:0, text:"cellular generator", onClick:function() {openScene("tools/cellulargenerator.js")}},
         //{id:0, text:"matrix system", onClick:function() {openScene("tools/matrixsystem.js")}},
         //{id:0, text:"sprite editor", onClick:function() {openScene("tools/spriteeditor.js")}},
-        {id:0, text:"tilemap editor", onClick:function() {openScene("tools/tilemapeditor.js")}}, // this is broken
-        //{id:0, text:"zone editor", onClick:function() {openScene("tools/zoneeditor.js")}},
+        {id:0, text:"tilemap editor", onClick:function() {openScene("tools/tilemapeditor.js")}}, 
+        {id:0, text:"zone editor", onClick:function() {openScene("tools/zoneeditor.js")}},
         {id:0, text:"back", onClick:function() { rootIcons(); }},
     ])
 }
